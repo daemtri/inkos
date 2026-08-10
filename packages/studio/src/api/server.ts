@@ -6863,6 +6863,6 @@ export async function startStudioServer(
     }
   }
 
-  console.log(`InkOS Studio running on http://localhost:${port}`);
+  console.log(`innk Studio running on http://localhost:${port}`);
   serve({ fetch: app.fetch, port });
 }
