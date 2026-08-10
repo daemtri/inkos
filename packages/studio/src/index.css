@@ -49,82 +49,83 @@
   --shadow-3d-hover: 0 20px 40px -15px oklch(0 0 0 / 0.2), 0 8px 16px -8px oklch(0 0 0 / 0.15);
 }
 
-/* ── Light Mode: Warm Parchment & Ink ── */
+/* ── Light Mode: 纸张白（Paper & Ink）── */
 :root {
   --radius: 0.6rem;
 
-  /* Background: Warm, aged paper with subtle radial light */
-  --background: oklch(0.985 0.005 80);
-  --background-radial: radial-gradient(circle at 50% 0%, oklch(0.995 0.002 85) 0%, oklch(0.985 0.005 80) 100%);
-  --foreground: oklch(0.13 0.02 60);
+  /* Background: 纸白底，顶部一点柔光 */
+  --background: #faf9f6;
+  --background-radial: radial-gradient(circle at 50% 0%, #fffdf9 0%, #faf9f6 100%);
+  --foreground: #27241f;
 
-  /* Cards: Crisp sheets on paper */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0.015 60);
+  /* Cards: 纸面上一张干净卡片 */
+  --card: #ffffff;
+  --card-foreground: #2b2721;
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.015 60);
+  --popover: #ffffff;
+  --popover-foreground: #2b2721;
 
-  /* Primary: Deep Oxblood / Ink */
-  --primary: oklch(0.45 0.12 25);
-  --primary-foreground: oklch(0.98 0.006 76);
+  /* Primary: 暖橙（纸上加深一档保证对比度），只做关键点缀 */
+  --primary: #c2512c;
+  --primary-foreground: #fdf8f1;
 
-  /* Secondary: Soft paper shadow */
-  --secondary: oklch(0.94 0.01 76);
-  --secondary-foreground: oklch(0.25 0.015 60);
+  /* Secondary: 纸的暗部 */
+  --secondary: #f0ede6;
+  --secondary-foreground: #3a352d;
 
-  /* Muted: Faded ink */
-  --muted: oklch(0.94 0.008 76);
-  --muted-foreground: oklch(0.38 0.02 60);
+  /* Muted: 淡墨 */
+  --muted: #f0ede6;
+  --muted-foreground: #716b5f;
 
-  /* Accent: Subtle gold leaf */
-  --accent: oklch(0.92 0.02 85);
-  --accent-foreground: oklch(0.25 0.05 60);
+  /* Accent: 淡淡的金箔 */
+  --accent: #f3ecdf;
+  --accent-foreground: #4d3a28;
 
-  --destructive: oklch(0.55 0.18 25);
-  --destructive-foreground: oklch(0.98 0 0);
+  --destructive: #b3382c;
+  --destructive-foreground: #fdf3f0;
 
-  --border: oklch(0.84 0.01 76);
-  --input: oklch(0.92 0.005 76);
-  --ring: oklch(0.45 0.12 25);
+  --border: #e4ded2;
+  --input: #ece7dd;
+  --ring: #c2512c;
 }
 
-/* ── Dark Mode: Obsidian & Candlelight ── */
-.dark {
-  /* Background: Deep obsidian with soft top glow */
-  --background: oklch(0.12 0.01 250);
-  --background-radial: radial-gradient(circle at 50% 0%, oklch(0.16 0.015 250) 0%, oklch(0.12 0.01 250) 100%);
-  --foreground: oklch(0.97 0.005 250);
+/* ── Dark Mode: 深夜墨色（Midnight Ink & Ember）──
+   data-theme 是主入口；.dark 选择器保留以兼容 Tailwind dark: 变体。 */
+:root[data-theme="dark"], .dark {
+  /* Background: 近黑墨底，顶部微微泛光 */
+  --background: #16161a;
+  --background-radial: radial-gradient(circle at 50% 0%, #1b1b21 0%, #16161a 100%);
+  --foreground: #ece9e2;
 
-  /* Cards: Floating graphite */
-  --card: oklch(0.18 0.015 250);
-  --card-foreground: oklch(0.95 0.005 250);
+  /* Cards: 细腻分层的石墨面板 */
+  --card: #1d1d23;
+  --card-foreground: #ece9e2;
 
-  --popover: oklch(0.18 0.015 250);
-  --popover-foreground: oklch(0.95 0.005 250);
+  --popover: #1d1d23;
+  --popover-foreground: #ece9e2;
 
-  /* Primary: Warm Amber / Candlelight */
-  --primary: oklch(0.78 0.14 85);
-  --primary-foreground: oklch(0.12 0.01 250);
+  /* Primary: 暖橙 #e8734a，只用于当前项、主按钮、状态点 */
+  --primary: #e8734a;
+  --primary-foreground: #1d0f06;
 
-  /* Secondary: Dark slate */
-  --secondary: oklch(0.22 0.02 250);
-  --secondary-foreground: oklch(0.92 0.005 250);
+  /* Secondary: 深一层的石墨 */
+  --secondary: #232329;
+  --secondary-foreground: #dad6cd;
 
-  /* Muted: Dimmed graphite */
-  --muted: oklch(0.22 0.015 250);
-  --muted-foreground: oklch(0.78 0.005 250);
+  /* Muted: 暗下来的石墨 */
+  --muted: #232329;
+  --muted-foreground: #9c978e;
 
-  /* Accent: Muted gold */
-  --accent: oklch(0.28 0.04 85);
-  --accent-foreground: oklch(0.95 0.06 85);
+  /* Accent: 暖调暗金 */
+  --accent: #2a241e;
+  --accent-foreground: #eec49b;
 
-  --destructive: oklch(0.55 0.2 25);
-  --destructive-foreground: oklch(0.98 0 0);
+  --destructive: #d95d50;
+  --destructive-foreground: #fdf3f0;
 
-  --border: oklch(0.30 0.02 250);
-  --input: oklch(0.25 0.02 250);
-  --ring: oklch(0.78 0.14 85);
+  --border: #2e2e36;
+  --input: #26262d;
+  --ring: #e8734a;
 }
 
 body {

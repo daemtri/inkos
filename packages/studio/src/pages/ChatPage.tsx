@@ -87,6 +87,8 @@ export interface ChatPageProps {
   readonly theme: Theme;
   readonly t: TFunction;
   readonly sse: { messages: ReadonlyArray<SSEMessage>; connected: boolean };
+  /** 工作台布局把生成物预览放进右侧栏，此时关掉 ChatPage 自带的弹层抽屉。 */
+  readonly hideArtifactDrawer?: boolean;
 }
 
 interface ServiceConfigPayload {
@@ -376,7 +378,7 @@ function SkillPickerPanel({
 
 // -- Component --
 
-export function ChatPage({ activeBookId, mode = activeBookId ? "book" : "book-create", nav, theme, t, sse: _sse }: ChatPageProps) {
+export function ChatPage({ activeBookId, mode = activeBookId ? "book" : "book-create", nav, theme, t, sse: _sse, hideArtifactDrawer = false }: ChatPageProps) {
   // -- Store selectors --
   const messages = useChatStore(chatSelectors.activeMessages);
   const activeSession = useChatStore(chatSelectors.activeSession);
@@ -1306,7 +1308,7 @@ export function ChatPage({ activeBookId, mode = activeBookId ? "book" : "book-cr
           sessionTitle={activeSession?.title ?? null}
         />
       )}
-      <ProjectArtifactDrawer />
+      {hideArtifactDrawer ? null : <ProjectArtifactDrawer />}
     </div>
   );
 }

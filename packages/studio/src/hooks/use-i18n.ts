@@ -129,6 +129,43 @@ const strings = {
   "nav.radar": { zh: "市场雷达", en: "Radar" },
   "nav.doctor": { zh: "环境诊断", en: "Doctor" },
 
+  // IconRail / AppShell
+  "rail.books": { zh: "书籍", en: "Books" },
+  "rail.allBooks": { zh: "全部书籍", en: "All books" },
+  "rail.create": { zh: "新建创作", en: "New creation" },
+  "rail.settings": { zh: "设置", en: "Settings" },
+  "rail.theme": { zh: "主题", en: "Theme" },
+  "rail.themeLight": { zh: "浅色", en: "Light" },
+  "rail.themeDark": { zh: "深色", en: "Dark" },
+  "rail.themeAuto": { zh: "跟随系统", en: "Auto" },
+  "rail.logout": { zh: "退出登录", en: "Log out" },
+
+  // Layout mode switch
+  "layout.switch": { zh: "布局", en: "Layout" },
+  "layout.classic": { zh: "经典布局", en: "Classic" },
+  "layout.workbench": { zh: "工作台", en: "Workbench" },
+
+  // Context panel
+  "context.recentBooks": { zh: "最近书籍", en: "Recent books" },
+  "context.chapters": { zh: "章节", en: "Chapters" },
+  "context.sessions": { zh: "会话", en: "Sessions" },
+  "context.collapse": { zh: "收起面板", en: "Collapse panel" },
+  "context.expand": { zh: "展开面板", en: "Expand panel" },
+
+  // Workbench
+  "workbench.manuscript": { zh: "文稿", en: "Manuscript" },
+  "workbench.selectChapter": { zh: "从左侧章节列表选择一章开始阅读。", en: "Pick a chapter from the list to start reading." },
+  "workbench.chat": { zh: "对话", en: "Chat" },
+  "workbench.collapseChat": { zh: "收起对话", en: "Collapse chat" },
+  "workbench.expandChat": { zh: "展开对话", en: "Expand chat" },
+  "workbench.artifactPreview": { zh: "生成物预览", en: "Artifact preview" },
+
+  // Dashboard welcome
+  "dash.welcome": { zh: "欢迎回来", en: "Welcome back" },
+  "dash.welcomeSubtitle": { zh: "今天也继续推进你的故事。", en: "Pick up your story where you left off." },
+  "dash.continue": { zh: "继续写作", en: "Continue writing" },
+  "dash.progress": { zh: "进度", en: "Progress" },
+
   // Translation
   "translation.title": { zh: "多语翻译 / 译介", en: "Multilingual Translation" },
   "translation.subtitle": { zh: "导入 EPUB / PDF / TXT / Markdown，设置任意源语言和目标语言，分批翻译、抽取术语、生成审校报告并导出。", en: "Import EPUB / PDF / TXT / Markdown, choose any source and target languages, translate in batches, keep glossary terms, review, and export." },

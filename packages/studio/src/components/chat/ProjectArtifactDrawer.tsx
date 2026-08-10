@@ -36,7 +36,7 @@ function isJsonArtifact(path: string, contentType: string): boolean {
   return path.endsWith(".json") || contentType.includes("application/json");
 }
 
-export function ProjectArtifactDrawer() {
+export function ProjectArtifactDrawer({ variant = "modal" }: { readonly variant?: "modal" | "inline" }) {
   const path = useChatStore((s) => s.projectArtifactPath);
   const close = useChatStore((s) => s.closeProjectArtifact);
   const [payload, setPayload] = useState<ProjectArtifactPayload | null>(null);
@@ -101,16 +101,9 @@ export function ProjectArtifactDrawer() {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[80] flex justify-end bg-background/35 backdrop-blur-[2px]">
-      <button
-        type="button"
-        aria-label={tr("关闭生成物预览", "Close artifact preview")}
-        className="absolute inset-0 cursor-default"
-        onClick={close}
-      />
-      <aside className="relative flex h-full w-[min(760px,calc(100vw-24px))] flex-col border-l border-border/55 bg-background shadow-2xl">
-        <header className="flex items-start justify-between gap-4 border-b border-border/45 px-6 py-5">
+  const body = (
+    <>
+      <header className="flex items-start justify-between gap-4 border-b border-border/45 px-6 py-5">
           <div className="min-w-0">
             <div className="text-[13px] font-medium uppercase tracking-[0.18em] text-muted-foreground/65">
               {tr("生成物", "Artifact")}
@@ -209,6 +202,24 @@ export function ProjectArtifactDrawer() {
             </div>
           )}
         </div>
+    </>
+  );
+
+  // inline 变体：嵌入工作台布局的右侧栏，不带遮罩与固定定位。
+  if (variant === "inline") {
+    return <aside className="flex h-full w-full flex-col bg-background">{body}</aside>;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[80] flex justify-end bg-background/35 backdrop-blur-[2px]">
+      <button
+        type="button"
+        aria-label={tr("关闭生成物预览", "Close artifact preview")}
+        className="absolute inset-0 cursor-default"
+        onClick={close}
+      />
+      <aside className="relative flex h-full w-[min(760px,calc(100vw-24px))] flex-col border-l border-border/55 bg-background shadow-2xl">
+        {body}
       </aside>
     </div>
   );
