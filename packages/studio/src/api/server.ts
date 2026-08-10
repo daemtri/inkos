@@ -131,6 +131,7 @@ import { access, mkdir, readFile, readdir, rename, rm, stat, writeFile } from "n
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { isSafeBookId } from "./safety.js";
 import { ApiError } from "./errors.js";
+import { authMiddleware, registerAuthRoutes } from "./auth.js";
 import { buildStudioBookConfig } from "./book-create.js";
 import {
   deleteStudioTaskSnapshot,
@@ -2878,6 +2879,12 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string, o
   };
 
   app.use("/*", cors());
+
+  // Auth gate: when INKOS_STUDIO_PASSWORD is set, every /api/v1/* route except
+  // /api/v1/auth/* requires a valid session cookie. Registered before all
+  // business routes so the middleware runs first (Hono 按注册顺序执行中间件).
+  app.use("/api/v1/*", authMiddleware);
+  registerAuthRoutes(app);
 
   // Structured error handler — ApiError returns typed JSON, others return 500
   app.onError((error, c) => {

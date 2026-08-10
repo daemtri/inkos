@@ -34,7 +34,6 @@ import {
   Feather,
   Wand2,
   FileInput,
-  TrendingUp,
   Stethoscope,
   Zap,
   FolderOpen,
@@ -43,11 +42,11 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
-  GitBranch,
   Clapperboard,
   Rows3,
   Film,
   Languages,
+  LogOut,
 } from "lucide-react";
 import { InkosLogo } from "./InkosLogo";
 
@@ -90,14 +89,15 @@ interface Nav {
   toFilmStudio: (id: string) => void;
 }
 
-export function Sidebar({ nav, activePage, sse, t }: {
+export function Sidebar({ nav, activePage, sse, t, authEnabled, onLogout }: {
   nav: Nav;
   activePage: string;
   sse: { messages: ReadonlyArray<SSEMessage> };
   t: TFunction;
+  authEnabled?: boolean;
+  onLogout?: () => void;
 }) {
   const { data, refetch: refetchBooks, mutate: mutateBooks } = useApi<{ books: ReadonlyArray<BookSummary> }>("/books");
-  const { data: filmsData, refetch: refetchFilms } = useApi<{ films: ReadonlyArray<{ projectId: string; title: string }> }>("/interactive-films");
   const { data: daemon, refetch: refetchDaemon } = useApi<{ running: boolean }>("/daemon");
   const sessions = useChatStore((s) => s.sessions);
   const sessionIdsByBook = useChatStore((s) => s.sessionIdsByBook);
@@ -116,10 +116,8 @@ export function Sidebar({ nav, activePage, sse, t }: {
   const [expandedBooks, setExpandedBooks] = useState<Set<string>>(new Set());
   const [projectChatExpanded, setProjectChatExpanded] = useState(true);
   const [myBooksExpanded, setMyBooksExpanded] = useState(true);
-  const [filmsExpanded, setFilmsExpanded] = useState(true);
 
   const books = data?.books ?? [];
-  const films = filmsData?.films ?? [];
   const projectChatKey = "__null__";
   const projectChatSessions = useMemo(
     () =>
@@ -167,10 +165,6 @@ export function Sidebar({ nav, activePage, sse, t }: {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookDataVersion, loadSessionList, projectChatExpanded]);
-
-  useEffect(() => {
-    void refetchFilms();
-  }, [bookDataVersion, refetchFilms]);
 
   useEffect(() => {
     if (activePage === "chat") {
@@ -313,14 +307,11 @@ export function Sidebar({ nav, activePage, sse, t }: {
             <CreateItem icon={<ScrollText size={16} />} label={t("nav.createShort")} onClick={() => launchProjectMode("short")} />
             <CreateItem icon={<Clapperboard size={16} />} label={t("nav.createScript")} onClick={() => launchProjectMode("script")} />
             <CreateItem icon={<Rows3 size={16} />} label={t("nav.createStoryboard")} onClick={() => launchProjectMode("storyboard")} />
-            <CreateItem icon={<Film size={16} />} label={t("nav.createInteractiveFilm")} onClick={() => launchProjectMode("interactive-film")} />
             <CreateItem icon={<Feather size={16} />} label={t("nav.createFanfic")} onClick={() => nav.toImport("fanfic")} />
             <CreateItem icon={<BookCopy size={16} />} label={t("nav.createSpinoff")} onClick={() => nav.toImport("spinoff")} />
             <CreateItem icon={<Wand2 size={16} />} label={t("nav.createImitation")} onClick={() => nav.toImport("imitation")} />
             <CreateItem icon={<FileInput size={16} />} label={t("nav.createContinuation")} onClick={() => nav.toImport("chapters")} />
             <CreateItem icon={<Languages size={16} />} label={t("nav.createTranslation")} active={activePage === "translation"} onClick={nav.toTranslation} />
-            <CreateItem icon={<GitBranch size={16} />} label={t("nav.createBranching")} onClick={() => launchProjectMode("play", "guided")} />
-            <CreateItem icon={<Gamepad2 size={16} />} label={t("nav.createFree")} onClick={() => launchProjectMode("play", "open")} />
           </div>
         </div>
 
@@ -435,32 +426,6 @@ export function Sidebar({ nav, activePage, sse, t }: {
               </div>
             )}
           </div>
-          </Collapse>
-        </div>
-
-        {/* 互动影游 Section */}
-        <div data-testid="film-projects-section">
-          <SectionHeader label={t("nav.createInteractiveFilm")} expanded={filmsExpanded} onToggle={() => setFilmsExpanded((v) => !v)} />
-          <Collapse open={filmsExpanded}>
-            <div className="space-y-0.5 pt-1">
-              {films.map((film) => (
-                <button
-                  key={film.projectId}
-                  type="button"
-                  data-testid={`film-project-${film.projectId}`}
-                  onClick={() => nav.toFilmStudio(film.projectId)}
-                  className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-left hover:bg-secondary/30 transition-colors"
-                >
-                  <Film size={14} className="shrink-0 text-muted-foreground" />
-                  <span className="truncate text-[15px] text-foreground">{film.title}</span>
-                </button>
-              ))}
-              {films.length === 0 && (
-                <div className="px-3 py-6 text-xs text-muted-foreground/50 italic text-center">
-                  {tr("还没有互动影游项目", "No interactive film projects yet")}
-                </div>
-              )}
-            </div>
           </Collapse>
         </div>
 
@@ -618,12 +583,6 @@ export function Sidebar({ nav, activePage, sse, t }: {
               onClick={nav.toImport}
             />
             <SidebarItem
-              label={t("nav.radar")}
-              icon={<TrendingUp size={16} />}
-              active={activePage === "radar"}
-              onClick={nav.toRadar}
-            />
-            <SidebarItem
               label={t("nav.doctor")}
               icon={<Stethoscope size={16} />}
               active={activePage === "doctor"}
@@ -633,15 +592,27 @@ export function Sidebar({ nav, activePage, sse, t }: {
         </div>
       </div>
 
-      {/* Footer / Status Area — only show when agent is online */}
-      {daemon?.running && (
-        <div className="p-4 border-t border-border bg-secondary/40">
-          <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-card border border-border shadow-sm">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">
-              {t("nav.agentOnline")}
-            </span>
-          </div>
+      {/* Footer / Status Area — agent 在线状态与退出登录（仅启用鉴权时） */}
+      {(daemon?.running || authEnabled) && (
+        <div className="p-4 border-t border-border bg-secondary/40 space-y-2">
+          {daemon?.running && (
+            <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-card border border-border shadow-sm">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">
+                {t("nav.agentOnline")}
+              </span>
+            </div>
+          )}
+          {authEnabled && (
+            <button
+              type="button"
+              onClick={() => onLogout?.()}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+            >
+              <LogOut size={14} />
+              <span>{tr("退出登录", "Log out")}</span>
+            </button>
+          )}
         </div>
       )}
 

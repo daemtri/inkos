@@ -3,6 +3,8 @@ import { localizeKnownRuntimeMessage } from "../lib/error-copy";
 
 const BASE = "/api/v1";
 const API_INVALIDATE_EVENT = "inkos:api-invalidate";
+// 任一请求收到 401（未登录/Cookie 过期）时广播，App 监听后跳回登录页。
+export const UNAUTHORIZED_EVENT = "inkos:unauthorized";
 
 interface ApiInvalidateDetail {
   readonly paths: ReadonlyArray<string>;
@@ -101,6 +103,10 @@ export async function fetchJson<T>(
 
   const fetchImpl = deps?.fetchImpl ?? fetch;
   const res = await fetchImpl(url, init);
+
+  if (res.status === 401 && typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT));
+  }
 
   if (!res.ok) {
     throw new Error(await readErrorMessage(res));

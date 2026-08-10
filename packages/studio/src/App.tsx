@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useHashRoute } from "./hooks/use-hash-route";
 import type { HashRoute } from "./hooks/use-hash-route";
 import { Sidebar } from "./components/Sidebar";
@@ -30,7 +30,8 @@ import { useSessionEvents } from "./hooks/use-session-events";
 import { useTheme } from "./hooks/use-theme";
 import { useI18n } from "./hooks/use-i18n";
 import { setAppLanguage, tr } from "./lib/app-language";
-import { postApi, putApi, useApi } from "./hooks/use-api";
+import { fetchJson, postApi, putApi, useApi, UNAUTHORIZED_EVENT } from "./hooks/use-api";
+import { LoginPage } from "./pages/LoginPage";
 import { Sun, Moon } from "lucide-react";
 import { House } from "lucide-react";
 
@@ -61,6 +62,45 @@ export function App() {
   const { data: project, error: projectError, refetch: refetchProject } = useApi<{ language: string; languageExplicit: boolean }>("/project");
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const [ready, setReady] = useState(false);
+  const [authState, setAuthState] = useState<"checking" | "need-login" | "authed">("checking");
+  const [authEnabled, setAuthEnabled] = useState(false);
+
+  // 启动时检查认证状态；authEnabled 且未认证时只渲染登录页。
+  const checkAuth = useCallback(async () => {
+    try {
+      const status = await fetchJson<{ authEnabled: boolean; authenticated: boolean }>("/auth/status");
+      setAuthEnabled(status.authEnabled);
+      setAuthState(status.authEnabled && !status.authenticated ? "need-login" : "authed");
+    } catch {
+      // 状态接口不可达（如服务未起）时不把用户锁在登录页，交给后续的项目配置错误屏兜底。
+      setAuthState("authed");
+    }
+  }, []);
+
+  useEffect(() => {
+    void checkAuth();
+  }, [checkAuth]);
+
+  // Cookie 过期或登出后，任一请求的 401 都会广播此事件，跳回登录页。
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleUnauthorized = () => setAuthState("need-login");
+    window.addEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
+    return () => {
+      window.removeEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
+    };
+  }, []);
+
+  const handleLoginSuccess = useCallback(() => {
+    void checkAuth();
+    // 未认证时 /project 已经 401 失败过，登录成功后需要重新拉取。
+    void refetchProject();
+  }, [checkAuth, refetchProject]);
+
+  const handleLogout = useCallback(async () => {
+    await postApi("/auth/logout").catch(() => undefined);
+    await checkAuth();
+  }, [checkAuth]);
 
   const isDark = theme === "dark";
 
@@ -127,6 +167,18 @@ export function App() {
 
   const startupGate = deriveStartupGate({ ready, projectError });
 
+  if (authState === "checking") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (authState === "need-login") {
+    return <LoginPage onSuccess={handleLoginSuccess} />;
+  }
+
   if (startupGate === "error") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -176,7 +228,7 @@ export function App() {
   return (
     <div className="h-screen bg-background text-foreground flex overflow-hidden font-sans">
       {/* Left Sidebar */}
-      <Sidebar nav={nav} activePage={activePage} sse={sse} t={t} />
+      <Sidebar nav={nav} activePage={activePage} sse={sse} t={t} authEnabled={authEnabled} onLogout={() => void handleLogout()} />
 
       {/* Center Content */}
       <div className="flex-1 flex flex-col min-w-0 bg-background/30 backdrop-blur-sm">
