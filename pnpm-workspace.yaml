@@ -1,2 +1,14 @@
 packages:
   - "packages/*"
+
+# pnpm 11+ reads settings only from this file (.npmrc is auth/registry only).
+# Link workspace packages so studio/cli compile against local core sources
+# instead of the older published @actalk/* releases on npm.
+linkWorkspacePackages: true
+
+overrides:
+  '@mariozechner/pi-ai': 0.67.1
+  '@mariozechner/pi-agent-core': 0.67.1
+
+onlyBuiltDependencies:
+  - esbuild
