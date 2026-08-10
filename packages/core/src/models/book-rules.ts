@@ -280,10 +280,34 @@ function splitList(value: string): string[] {
     .filter((item) => item.length > 0);
 }
 
+const FIRST_PERSON_PATTERN = /第一人称|first[-\s]?person|\bfirst\b/i;
+const THIRD_PERSON_PATTERN = /第三人称|third[-\s]?person|\bthird\b/i;
+
+/**
+ * Narrative person is the FIRST declaration in the POV section — the primary
+ * statement comes before any exception clauses. Scanning the whole document
+ * with a fixed first-before-third priority misreads a third-person book whose
+ * rules mention 第一人称 in an exception ("仅记忆碎片章节允许第一人称") or a
+ * prohibition ("禁止切换为第一人称") as a first-person book.
+ */
 function detectNarrativePerson(raw: string): "first" | "third" | undefined {
-  if (/第一人称|first[-\s]?person|\bfirst\b/i.test(raw)) return "first";
-  if (/第三人称|third[-\s]?person|\bthird\b/i.test(raw)) return "third";
-  return undefined;
+  const section = extractMarkdownSection(raw, [
+    "叙事人称",
+    "叙事视角",
+    "视角",
+    "Narrative Person",
+    "Narrative POV",
+    "POV",
+  ]);
+  return earliestPersonMatch(section) ?? earliestPersonMatch(raw);
+}
+
+function earliestPersonMatch(raw: string): "first" | "third" | undefined {
+  const firstIdx = raw.search(FIRST_PERSON_PATTERN);
+  const thirdIdx = raw.search(THIRD_PERSON_PATTERN);
+  if (firstIdx === -1) return thirdIdx === -1 ? undefined : "third";
+  if (thirdIdx === -1) return "first";
+  return firstIdx < thirdIdx ? "first" : "third";
 }
 
 function normalizeFanficMode(value: string | undefined): "canon" | "au" | "ooc" | "cp" | undefined {
