@@ -83,36 +83,26 @@ INKOS_LLM_MODEL=gpt-4o
 INKOS_STUDIO_PASSWORD=你的强密码
 ```
 
-## 5. systemd 常驻运行
+## 5. pm2 常驻运行
 
-创建 `/etc/systemd/system/inkos-studio.service`：
-
-```ini
-[Unit]
-Description=InkOS Studio
-After=network.target
-
-[Service]
-Type=simple
-WorkingDirectory=/app/inkos
-Environment=NODE_ENV=production
-Environment=INKOS_STUDIO_PORT=4567
-ExecStart=/usr/bin/node /app/inkos/packages/studio/dist/api/index.js /data/inkos-project
-Restart=always
-RestartSec=3
-LimitNOFILE=65535
-
-[Install]
-WantedBy=multi-user.target
-```
-
-启动：
+仓库根目录自带 `ecosystem.config.cjs`，直接用：
 
 ```bash
-systemctl daemon-reload
-systemctl enable --now inkos-studio
-systemctl status inkos-studio     # 确认 active (running)
-journalctl -u inkos-studio -f     # 实时日志
+npm i -g pm2
+
+cd /app/inkos
+# 路径与端口可通过环境变量覆盖（默认值见 ecosystem.config.cjs 注释）
+INKOS_PROJECT_ROOT=/data/inkos-project INKOS_STUDIO_PORT=4567 pm2 start ecosystem.config.cjs
+
+pm2 status                  # 确认 online
+pm2 logs inkos-studio       # 实时日志
+pm2 save && pm2 startup     # 开机自启（startup 会输出一条命令，复制执行）
+```
+
+更新代码后：
+
+```bash
+git pull && pnpm install && pnpm build && pm2 restart inkos-studio
 ```
 
 ## 6. 放行端口
@@ -160,7 +150,7 @@ cd /app/inkos
 git pull
 pnpm install
 pnpm build
-systemctl restart inkos-studio
+pm2 restart inkos-studio
 
 # 数据备份（所有书稿、设定、会话都在数据目录）
 tar czf inkos-backup-$(date +%F).tar.gz -C /data inkos-project
