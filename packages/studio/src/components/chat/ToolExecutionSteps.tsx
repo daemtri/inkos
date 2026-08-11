@@ -284,6 +284,57 @@ function ScriptStoryboardResultPreview({ exec, onOpenFilmStudio }: { exec: ToolE
   );
 }
 
+function ShortFictionResultPreview({ exec }: { exec: ToolExecution }) {
+  const openProjectArtifact = useChatStore((s) => s.openProjectArtifact);
+  if (exec.tool !== "short_fiction_run" || exec.status !== "completed") return null;
+  const details = getGeneratedArtifactDetails(exec);
+  if (!details || details.kind !== "short_fiction_created") return null;
+  const maybeRows: Array<readonly [string, string] | null> = [
+    details.finalMarkdownPath ? [tr("正文", "Full text"), details.finalMarkdownPath] : null,
+    details.salesPackagePath ? [tr("简介卖点", "Sales package"), details.salesPackagePath] : null,
+  ];
+  const rows = maybeRows.filter((row): row is readonly [string, string] => Boolean(row));
+  if (rows.length === 0) return null;
+  return (
+    <div className="mx-3 mb-3 mt-1 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
+      <div className="text-[16px] leading-6 font-semibold text-primary">
+        {details.title ?? tr("短篇已生成", "Short fiction generated")}
+      </div>
+      <div className="mt-2 space-y-1.5">
+        {rows.map(([label, path]) => (
+          <button
+            key={label}
+            type="button"
+            onClick={() => openProjectArtifact(path)}
+            className="group flex w-full items-start justify-between gap-3 rounded-lg border border-transparent px-2 py-1.5 text-left transition hover:border-primary/25 hover:bg-background/65"
+          >
+            <span className="min-w-0 text-[13px] leading-5 text-muted-foreground break-all">
+              <span className="font-medium text-foreground">{label}{tr("：", ": ")}</span>{path}
+            </span>
+            <span className="mt-0.5 shrink-0 rounded-md border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary opacity-80 transition group-hover:opacity-100">
+              {tr("查看", "View")}
+            </span>
+          </button>
+        ))}
+      </div>
+      {details.storyId && (
+        <div className="mt-2 flex gap-2 border-t border-primary/10 pt-2">
+          {(["epub", "txt"] as const).map((format) => (
+            <a
+              key={format}
+              href={buildApiUrl(`/shorts/${encodeURIComponent(details.storyId!)}/export?format=${format}`) ?? undefined}
+              download
+              className="rounded-md border border-primary/25 bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary transition hover:bg-primary/20"
+            >
+              {format === "epub" ? tr("导出 EPUB", "Export EPUB") : tr("导出 TXT", "Export TXT")}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function getPlayToolDetails(exec: ToolExecution): PlayToolDetails | null {
   if (!["play_start", "play_step", "play_revise"].includes(exec.tool)) return null;
   if (!exec.details || typeof exec.details !== "object") return null;
@@ -680,6 +731,7 @@ function PipelineExecution({
         onProposedAction={onProposedAction}
         onRejectProposedAction={onRejectProposedAction}
       />
+      <ShortFictionResultPreview exec={exec} />
       <ScriptStoryboardResultPreview exec={exec} onOpenFilmStudio={onOpenFilmStudio} />
       <PlayResultPreview exec={exec} />
       <PlayEditPreview exec={exec} />

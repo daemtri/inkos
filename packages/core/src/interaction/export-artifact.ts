@@ -130,6 +130,47 @@ export async function buildExportArtifact(
   };
 }
 
+export interface ShortFictionExportArtifact {
+  readonly fileName: string;
+  readonly format: "txt" | "md" | "epub";
+  readonly contentType: string;
+  readonly payload: string | Buffer;
+}
+
+/**
+ * Export a completed short fiction (single `final/full.md` document) as
+ * txt/md/epub. Unlike book export there is no chapter index — the markdown
+ * body is the whole work.
+ */
+export async function buildShortFictionExportArtifact(options: {
+  readonly storyId: string;
+  readonly title: string;
+  readonly markdown: string;
+  readonly format?: "txt" | "md" | "epub";
+  readonly language?: string;
+}): Promise<ShortFictionExportArtifact> {
+  const format = options.format ?? "txt";
+  if (format === "epub") {
+    const { title, html } = markdownToSimpleHtml(options.markdown);
+    const epubInstance = new EPub(
+      { title: options.title || title, lang: options.language === "en" ? "en" : "zh-CN" },
+      [{ title, content: html }],
+    );
+    return {
+      fileName: `${options.storyId}.epub`,
+      format,
+      contentType: "application/epub+zip",
+      payload: await epubInstance.genEpub(),
+    };
+  }
+  return {
+    fileName: `${options.storyId}.${format}`,
+    format,
+    contentType: format === "md" ? "text/markdown; charset=utf-8" : "text/plain; charset=utf-8",
+    payload: options.markdown,
+  };
+}
+
 export async function writeExportArtifact(
   state: ExportStateLike,
   bookId: string,

@@ -279,6 +279,7 @@ vi.mock("@actalk/inkos-core", async (importOriginal) => {
     createInteractionToolsFromDeps: createInteractionToolsFromDepsMock,
     deleteLatestChapter: deleteLatestChapterMock,
     executeEditTransaction: actual.executeEditTransaction,
+    buildShortFictionExportArtifact: actual.buildShortFictionExportArtifact,
     listChapterVersions: actual.listChapterVersions,
     readChapterPlanDocument: actual.readChapterPlanDocument,
     readChapterUserBrief: actual.readChapterUserBrief,
@@ -2439,6 +2440,33 @@ describe("createStudioServer daemon lifecycle", () => {
 
     const traversal = await app.request("http://localhost/api/v1/project/artifacts/interactive-films/%2e%2e/inkos.json");
     expect([400, 404]).toContain(traversal.status);
+  });
+
+  it("exports a short fiction as txt or epub from final/full.md", async () => {
+    const { createStudioServer } = await import("./server.js");
+    const app = createStudioServer(cloneProjectConfig() as never, root);
+    const storyDir = join(root, "shorts", "demo-story", "final");
+    await mkdir(storyDir, { recursive: true });
+    await writeFile(join(storyDir, "full.md"), "# 大唐女帝\n\n冷宫签到。\n", "utf-8");
+
+    const txt = await app.request("http://localhost/api/v1/shorts/demo-story/export?format=txt");
+    expect(txt.status).toBe(200);
+    expect(txt.headers.get("content-type")).toContain("text/plain");
+    expect(txt.headers.get("content-disposition")).toContain("attachment");
+    expect(await txt.text()).toBe("# 大唐女帝\n\n冷宫签到。\n");
+
+    const epub = await app.request("http://localhost/api/v1/shorts/demo-story/export?format=epub");
+    expect(epub.status).toBe(200);
+    expect(epub.headers.get("content-type")).toContain("application/epub+zip");
+    const epubBytes = new Uint8Array(await epub.arrayBuffer());
+    expect(epubBytes.length).toBeGreaterThan(0);
+    expect(String.fromCharCode(epubBytes[0], epubBytes[1])).toBe("PK");
+
+    const missing = await app.request("http://localhost/api/v1/shorts/no-such-story/export?format=txt");
+    expect(missing.status).toBe(404);
+
+    const badFormat = await app.request("http://localhost/api/v1/shorts/demo-story/export?format=pdf");
+    expect(badFormat.status).toBe(400);
   });
 
   it("rejects create requests when a complete book with the same id already exists", async () => {

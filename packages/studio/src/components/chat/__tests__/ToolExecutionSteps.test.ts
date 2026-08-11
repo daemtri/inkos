@@ -198,6 +198,34 @@ describe("groupChronologically", () => {
     });
   });
 
+  it("renders short fiction artifacts as clickable preview rows", () => {
+    const exec = makeExec({
+      id: "short-2",
+      tool: "short_fiction_run",
+      label: "短篇生产",
+      details: {
+        kind: "short_fiction_created",
+        title: "大唐女帝",
+        storyId: "demo-story",
+        finalMarkdownPath: "shorts/demo-story/final/full.md",
+        salesPackagePath: "shorts/demo-story/final/sales-package.md",
+      },
+    });
+
+    const html = renderToStaticMarkup(React.createElement(ToolExecutionSteps, { executions: [exec] }));
+
+    expect(html).toContain("大唐女帝");
+    expect(html).toContain("正文");
+    expect(html).toContain("shorts/demo-story/final/full.md");
+    expect(html).toContain("简介卖点");
+    expect(html).toContain("shorts/demo-story/final/sales-package.md");
+    expect(html).toContain("查看");
+    expect(html).toContain("导出 EPUB");
+    expect(html).toContain("导出 TXT");
+    expect(html).toContain("shorts/demo-story/export?format=epub");
+    expect(html).toContain("shorts/demo-story/export?format=txt");
+  });
+
   it("extracts and renders interactive-film creation artifacts", () => {
     const exec = makeExec({
       id: "interactive-film-1",

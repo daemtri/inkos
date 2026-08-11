@@ -39,6 +39,7 @@ import {
   fetchWithProxy,
   chatCompletion,
   buildExportArtifact,
+  buildShortFictionExportArtifact,
   evaluateBookQuality,
   ConsolidatorAgent,
   DetectionConfigSchema,
@@ -5643,6 +5644,44 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string, o
     } catch {
       return c.json({ error: "Export failed" }, 500);
     }
+  });
+
+  // --- Short fiction export (txt/md/epub from shorts/<id>/final/full.md) ---
+
+  app.get("/api/v1/shorts/:storyId/export", async (c) => {
+    const storyId = c.req.param("storyId");
+    const format = (c.req.query("format") ?? "txt") as string;
+    if (!["txt", "md", "epub"].includes(format)) {
+      return c.json({ error: "Unsupported export format" }, 400);
+    }
+    if (!storyId || storyId.includes("..") || storyId.includes("\0")) {
+      return c.json({ error: "Invalid story id" }, 400);
+    }
+
+    let markdown: string;
+    try {
+      markdown = await readFile(join(root, "shorts", storyId, "final", "full.md"), "utf-8");
+    } catch {
+      return c.json({ error: "Short fiction not found" }, 404);
+    }
+
+    const artifact = await buildShortFictionExportArtifact({
+      storyId,
+      title: storyId,
+      markdown,
+      format: format as "txt" | "md" | "epub",
+    });
+    const responseBody = typeof artifact.payload === "string"
+      ? artifact.payload
+      : new Uint8Array(artifact.payload);
+    return new Response(responseBody, {
+      headers: {
+        "Content-Type": artifact.contentType,
+        // storyId may be non-ASCII (Chinese titles) — provide an ASCII fallback
+        // plus an RFC 5987 encoded filename.
+        "Content-Disposition": `attachment; filename="short-fiction.${artifact.format}"; filename*=UTF-8''${encodeURIComponent(artifact.fileName)}`,
+      },
+    });
   });
 
   // --- Export to file (save to project dir) ---
