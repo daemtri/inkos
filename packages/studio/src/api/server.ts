@@ -82,7 +82,6 @@ import {
   type ActionSource,
   type AgentSkill,
   type BuiltinPrompt,
-  createGenerateCoverTool,
   createInteractiveFilmCreationTool,
   createPlayStartTool,
   createScriptCreationTool,
@@ -212,7 +211,6 @@ const TOOL_LABELS: Record<string, BilingualLabel> = {
   storyboard_create: { zh: "分镜创作", en: "Storyboard creation" },
   interactive_film_create: { zh: "互动影游", en: "Interactive film" },
   translation_create: { zh: "翻译项目", en: "Translation" },
-  generate_cover: { zh: "生成封面", en: "Cover generation" },
   play_edit: { zh: "编辑互动世界", en: "Edit interactive world" },
   play_start: { zh: "启动互动世界", en: "Start interactive world" },
   play_revise: { zh: "重做互动回合", en: "Redo interactive turn" },
@@ -453,8 +451,8 @@ function resolveProjectImageFile(root: string, rawPath: string): { readonly reso
   ) {
     throw new ApiError(400, "INVALID_PROJECT_FILE_PATH", "Invalid project file path");
   }
-  if (!relPath.startsWith("shorts/") && !relPath.startsWith("covers/") && !relPath.startsWith("interactive-films/")) {
-    throw new ApiError(400, "INVALID_PROJECT_FILE_PATH", "Only generated shorts/, covers/, interactive-films/ images can be previewed");
+  if (!relPath.startsWith("shorts/") && !relPath.startsWith("interactive-films/")) {
+    throw new ApiError(400, "INVALID_PROJECT_FILE_PATH", "Only generated shorts/, interactive-films/ images can be previewed");
   }
 
   const ext = relPath.split(".").pop()?.toLowerCase() ?? "";
@@ -494,7 +492,7 @@ function normalizeProjectGeneratedPath(root: string, rawPath: string, code: stri
     throw new ApiError(400, code, "Invalid project artifact path");
   }
 
-  const allowedRoots = ["dramas/", "storyboards/", "interactive-films/", "shorts/", "covers/"];
+  const allowedRoots = ["dramas/", "storyboards/", "interactive-films/", "shorts/"];
   if (!allowedRoots.some((prefix) => relPath.startsWith(prefix))) {
     throw new ApiError(400, code, "Only generated writing artifacts can be opened");
   }
@@ -1001,7 +999,7 @@ type ExternalChatEditResult = {
 
 const CHAT_EDIT_WARNING = "[warning] Chat external edit requires review before continuation.";
 const CHAT_EDIT_TEXT_EXTENSIONS = /\.(md|txt|json|ya?ml)$/i;
-const CHAT_EDIT_ALLOWED_ROOTS = new Set(["books", "shorts", "covers", "genres"]);
+const CHAT_EDIT_ALLOWED_ROOTS = new Set(["books", "shorts", "genres"]);
 
 function parseReplacementInstruction(instruction: string): { oldText: string; newText: string } | null {
   const inFileQuoted = instruction.match(/(?:里|里的|中|中的|里面)\s*[「“"]([\s\S]+?)[」”"]\s*(?:改成|替换成|换成)\s*[「“"]([\s\S]+?)[」”"]/);
@@ -1265,14 +1263,6 @@ function validateAgentActionExecution(args: {
     );
   }
 
-  if (args.requestedIntent === "generate_cover" && !hasSuccessfulToolExec(args.collectedToolExecs, "generate_cover")) {
-    return pick(
-      lang,
-      "已确认生成封面，但模型没有实际调用封面工具。请重试；如果仍失败，请检查模型是否支持工具调用。",
-      "Cover generation was confirmed, but the model never called the cover tool. Retry; if it keeps failing, check whether the model supports tool calls.",
-    );
-  }
-
   return undefined;
 }
 
@@ -1414,7 +1404,6 @@ function isConfirmedProductionAction(args: {
     || args.requestedIntent === "interactive_film_create"
     || args.requestedIntent === "translation_create"
     || args.requestedIntent === "play_start"
-    || args.requestedIntent === "generate_cover"
     || args.requestedIntent === "draft_structure"
     || args.requestedIntent === "connect_choice"
     || args.requestedIntent === "remove_node"
@@ -1606,7 +1595,6 @@ async function executeConfirmedProductionAction(args: {
   const actionPayload = args.actionPayload;
   let tool: ReturnType<typeof createSubAgentTool>
     | ReturnType<typeof createShortFictionRunTool>
-    | ReturnType<typeof createGenerateCoverTool>
     | ReturnType<typeof createScriptCreationTool>
     | ReturnType<typeof createStoryboardCreationTool>
     | ReturnType<typeof createInteractiveFilmCreationTool>
@@ -1645,7 +1633,6 @@ async function executeConfirmedProductionAction(args: {
       ...(payload?.storyId ? { storyId: payload.storyId } : {}),
       ...(payload?.chapters ? { chapters: payload.chapters } : {}),
       ...(payload?.charsPerChapter ? { charsPerChapter: payload.charsPerChapter } : {}),
-      ...(payload?.cover !== undefined ? { cover: payload.cover } : {}),
     };
   } else if (args.requestedIntent === "write_next") {
     if (!args.bookId) {
@@ -1655,17 +1642,6 @@ async function executeConfirmedProductionAction(args: {
     tool = createWriteNextChapterTool(args.pipeline, args.bookId, lang, chapterCount);
     agent = "writer";
     params = { agent: "writer", bookId: args.bookId };
-  } else if (args.requestedIntent === "generate_cover") {
-    const payload = actionPayload?.generateCover;
-    const title = requirePayloadText(payload?.title, pick(lang, "确认生成封面缺少标题，请重新生成确认卡。", "The cover generation confirmation is missing a title. Regenerate the confirmation card."));
-    tool = createGenerateCoverTool(args.root, { actionPayload });
-    params = {
-      title,
-      ...(payload?.intro ? { intro: payload.intro } : {}),
-      ...(payload?.sellingPoints ? { sellingPoints: payload.sellingPoints } : {}),
-      ...(payload?.coverPrompt ? { coverPrompt: payload.coverPrompt } : {}),
-      ...(payload?.outputDir ? { outputDir: payload.outputDir } : {}),
-    };
   } else if (args.requestedIntent === "script_create") {
     const payload = actionPayload?.scriptCreate;
     const title = requirePayloadText(payload?.title, pick(lang, "确认创建剧本缺少标题，请重新生成确认卡。", "The script creation confirmation is missing a title. Regenerate the confirmation card."));
@@ -3904,7 +3880,7 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string, o
       return c.json({
         error: pick(
           await currentProjectLanguage(),
-          "封面 Base URL 必须是有效的 HTTP(S) 地址，且不能包含账号、查询参数或锚点。",
+          "配图服务 Base URL 必须是有效的 HTTP(S) 地址，且不能包含账号、查询参数或锚点。",
           "Cover Base URL must be a valid HTTP(S) URL without credentials, query parameters, or fragments.",
         ),
       }, 400);

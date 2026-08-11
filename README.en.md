@@ -42,7 +42,7 @@ Thanks to [Kimi](https://www.kimi.com/code/?aff=inkos) for sponsoring this proje
 
 InkOS 1.7 brings cross-language delivery, long-form forecasting, and continuous collaboration into the same Agent workbench. Translate complete works, compare several non-canonical futures, keep chatting while production runs in the background, or ask Chat to read references, import an existing manuscript, adjust prompts, revise chapters, and safely recover the creative state.
 
-- **Model setup** — Studio includes provider settings, model routing, cover-service settings, [kkaiapi](https://en.kkaiapi.com/) / OpenRouter aggregator entries, and custom OpenAI-compatible endpoints.
+- **Model setup** — Studio includes provider settings, model routing, image-service settings, [kkaiapi](https://en.kkaiapi.com/) / OpenRouter aggregator entries, and custom OpenAI-compatible endpoints.
 - **Narrative forecasts**: Studio Chat and the CLI can create, re-check, and select 2-5 isolated futures from current canon, comparing chapter beats, character decisions, projected changes, risks, and author-intent alignment. Selecting one saves a plan only; it does not pre-emptively alter prose, foundations, or story state.
 - **Complete translation workbench**: import EPUB, text-based PDF, TXT, and Markdown; translate by chapter and semantic segment; maintain a glossary, generate side-by-side review reports, and export TXT, Markdown, or EPUB. Studio, Chat, and `inkos translate init / run / export` share the same capability.
 - **Native cross-language creation**: short fiction, scripts, storyboards, and interactive-film pipelines now include English-native prompt paths, with matching Studio copy and CLI language fallback rather than a translation-only menu.
@@ -70,7 +70,6 @@ This release continues the v1.5 direction: heavy actions are confirmable, comple
 </p>
 
 <p align="center">
-  <img src="assets/inkos-short-demo-cover.png" width="210" alt="InkOS Short cover example">
   <img src="assets/play-openworld-warcraft.png" width="210" alt="InkOS Play fantasy open-world example">
   <img src="assets/play-openworld-romance.png" width="210" alt="InkOS Play romance example">
   <img src="assets/play-openworld-detective.png" width="210" alt="InkOS Play detective example">
@@ -80,13 +79,13 @@ This release continues the v1.5 direction: heavy actions are confirmable, comple
 
 **Narrative forecast** — before writing the next chapter, generate 2-5 isolated future branches from current canon and compare their chapter beats, character decisions, projected changes, risks, and author-intent alignment directly in Studio Chat. Selecting a branch writes only `selected-branch-plan.md`; it does not change prose, outlines, or canonical state. Forecasts are marked stale when canon changes.
 
-**InkOS Short** — Studio chat and CLI can create a complete standalone short-fiction package: full manuscript, outline records, review records, synopsis, selling points, cover prompt, and an optional cover image when a cover provider is configured.
+**InkOS Short** — Studio chat and CLI can create a complete standalone short-fiction package: full manuscript, outline records, review records, synopsis, and selling points.
 
 **InkOS Play** — build open worlds or branching interactive fiction from natural-language world contracts: time flow, character agents, inventory, evidence, relationships, scene state, visual rules, guided choices, free actions, and optional image generation.
 
 **Interactive film/games** — turn an idea, script, or prose reference into branching scenes, variables, endings, image prompts, node images, and an exportable project package.
 
-**Studio Chat** — a persistent chat surface for answering questions, proposing actions, creating books, launching Short / Play, generating covers, and editing text artifacts without pretending an action succeeded before the tool result exists.
+**Studio Chat** — a persistent chat surface for answering questions, proposing actions, creating books, launching Short / Play, and editing text artifacts without pretending an action succeeded before the tool result exists.
 
 **Agent Skills and research** — add standard `SKILL.md` packages under `.agents/skills/` or another AgentSkills directory, force them with `@skill-id`, or ask for web research to generate a sourced Markdown report.
 
@@ -249,7 +248,7 @@ If a service test fails, first check that the service, model, and protocol match
 
 **Studio Chat + CLI + TUI share the same execution surface**
 
-- **Studio Chat**: discuss, create books, run Short, generate covers, launch Play, and edit persistent files from one chat surface; heavy actions show confirmation cards.
+- **Studio Chat**: discuss, create books, run Short, launch Play, and edit persistent files from one chat surface; heavy actions show confirmation cards.
 - **Creation entries**: Long-form Novel, Short Fiction, Fan Fiction, Spinoff, Style Imitation, Continuation, Branching Interactive, and Open World are available as first-class Studio entries.
 - **TUI dashboard**: `inkos tui` opens the terminal full-screen interaction mode for keyboard-first users.
 - **External agent entry**: `inkos interact --json --message "..."` remains the structured entry for OpenClaw and other agents.
@@ -287,25 +286,7 @@ inkos short run \
   --chars 1000
 ```
 
-Outputs are saved under `shorts/<story-name>/final/`, including `full.md`, `sales-package.md`, `cover-prompt.md`, and `cover.png` when cover generation is configured.
-
-### Generate a Standalone Cover
-
-To generate only a cover for an existing title or synopsis, do not rerun the short-fiction pipeline. Ask Studio chat directly:
-
-```text
-Generate a short-fiction cover for "The Divorce Papers He Regretted", modern city, high-drama reversal.
-```
-
-The cover tool writes `covers/<title>/cover-prompt.md` and `covers/<title>/cover.png`. If no cover provider is configured yet, set the cover provider and API key in Studio model settings first.
-
-After generation, you can keep editing the cover prompt through chat, for example: "move the character closer, make the title text bigger, and give her a colder smile." InkOS will pass the revised direction as `coverPrompt`, rewrite `cover-prompt.md`, and regenerate the cover without rewriting the story.
-
-<p align="center">
-  <img src="assets/inkos-short-demo-cover.png" width="260" alt="InkOS Short cover example">
-  <img src="assets/play-openworld-warcraft.png" width="260" alt="InkOS Play open-world example">
-  <img src="assets/play-openworld-detective.png" width="260" alt="InkOS Play detective example">
-</p>
+Outputs are saved under `shorts/<story-name>/final/`, including `full.md` and `sales-package.md`.
 
 ### Launch an Open World or Branching Story
 
@@ -346,7 +327,7 @@ Every genre includes a **fatigue word list** (e.g., "delve", "tapestry", "testam
 
 ### Studio Chat + Action Surface
 
-Studio Chat is not just a Q&A box. It can create long-form books, run Short, generate covers, launch Play, edit persistent text artifacts, and ask for confirmation before heavy actions. Plain discussion remains plain text; explicit creation requests become tool actions.
+Studio Chat is not just a Q&A box. It can create long-form books, run Short, launch Play, edit persistent text artifacts, and ask for confirmation before heavy actions. Plain discussion remains plain text; explicit creation requests become tool actions.
 
 ### InkOS Play: Open Worlds and Branching Interaction
 
@@ -530,7 +511,7 @@ inkos agent "Write the next chapter, focus on the boss fight and loot distributi
 inkos agent "Create a progression fantasy about a mage who can only use one spell"
 ```
 
-Agent mode exposes tools according to the current session kind: book creation, control-surface edits, planning, composition, writing, audit, revision, Short, cover, and Play tools are only made available where they make sense. The recommended agent flow is: adjust the control surface first, then `plan` / `compose`, then choose draft-only or full-pipeline writing.
+Agent mode exposes tools according to the current session kind: book creation, control-surface edits, planning, composition, writing, audit, revision, Short, and Play tools are only made available where they make sense. The recommended agent flow is: adjust the control surface first, then `plan` / `compose`, then choose draft-only or full-pipeline writing.
 
 ### 4. Studio Play Mode
 
@@ -543,13 +524,12 @@ Studio's **Open World** and **Branching Interactive** entries launch interactive
 </p>
 
 <p align="center">
-  <img src="assets/inkos-short-demo-cover.png" width="230" alt="Short-fiction cover output">
   <img src="assets/play-openworld-romance.png" width="230" alt="Romance interactive-world output">
   <img src="assets/play-openworld-detective.png" width="230" alt="Detective interactive-world output">
   <img src="assets/play-item-warcraft.png" width="230" alt="Interactive-world item image output">
 </p>
 
-The first image is a local Studio screenshot. The other images are real local outputs from InkOS Short and InkOS Play: mobile-first short-fiction covers, open-world scenes, detective evidence visuals, and item imagery.
+The first image is a local Studio screenshot. The other images are real local outputs from InkOS Play: open-world scenes, detective evidence visuals, and item imagery.
 
 ## CLI Reference
 

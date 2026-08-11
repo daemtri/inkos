@@ -28,7 +28,6 @@ import {
   createLsTool,
   createWriteTruthFileTool,
   createShortFictionRunTool,
-  createGenerateCoverTool,
   createPlayEditTool,
   createPlayReviseTool,
   createPlayStartTool,
@@ -388,7 +387,6 @@ export function isTerminalProductionToolName(toolName: unknown): boolean {
     || toolName === "script_create"
     || toolName === "storyboard_create"
     || toolName === "interactive_film_create"
-    || toolName === "generate_cover"
     || toolName === "play_start"
     || toolName === "play_edit"
     || toolName === "play_revise"
@@ -787,7 +785,6 @@ function agentMessagesToPlain(
  */
 const PRODUCTION_MUTATION_TOOL_NAMES = new Set([
   "sub_agent",
-  "generate_cover",
   "write_truth_file",
   "rename_entity",
   "patch_chapter_text",
@@ -849,9 +846,6 @@ function createModeTools(params: CreateAgentToolsForModeParams) {
   if (params.sessionKind === "short") {
     if (isConfirmed("short_run")) {
       return [createShortFictionRunTool(params.pipeline, params.projectRoot, { actionPayload: params.actionPayload, language: lang })];
-    }
-    if (isConfirmed("generate_cover")) {
-      return [createGenerateCoverTool(params.projectRoot, { actionPayload: params.actionPayload })];
     }
     return [proposalTool, materialTool, materialRetrievalTool];
   }
@@ -928,7 +922,6 @@ function createModeTools(params: CreateAgentToolsForModeParams) {
 
   const bookTools = [
     subAgentTool,
-    createGenerateCoverTool(params.projectRoot, { actionPayload: params.actionPayload }),
     createReadTool(params.projectRoot, { allowSystemPaths: params.allowSystemFileRead }),
     createWriteTruthFileTool(params.pipeline, params.projectRoot, params.bookId),
     createRenameEntityTool(params.pipeline, params.projectRoot, params.bookId),
@@ -951,7 +944,6 @@ function createModeTools(params: CreateAgentToolsForModeParams) {
     // and get/select belong to the planning workflow, not text editing.
     return bookTools.filter((tool) => ![
       "sub_agent",
-      "generate_cover",
       "research_web",
       "import_chapters",
       "create_narrative_forecast",

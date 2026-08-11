@@ -77,20 +77,18 @@ describe("groupChronologically", () => {
     expect(groupToolExecutionsChronologically([])).toHaveLength(0);
   });
 
-  it("renders short fiction and cover tools as visible pipeline cards", () => {
+  it("renders short fiction tools as visible pipeline cards", () => {
     const execs: ToolExecution[] = [
       makeExec({ id: "1", tool: "read", label: "读取文件" }),
-      makeExec({ id: "2", tool: "generate_cover", label: "生成封面" }),
       makeExec({ id: "3", tool: "short_fiction_run", label: "短篇生产" }),
       makeExec({ id: "4", tool: "grep", label: "搜索" }),
     ];
 
     const groups = groupToolExecutionsChronologically(execs);
 
-    expect(groups).toHaveLength(4);
-    expect(groups.map((group) => group.type)).toEqual(["utilities", "pipeline", "pipeline", "utilities"]);
-    expect(groups[1].type === "pipeline" ? groups[1].exec.tool : "").toBe("generate_cover");
-    expect(groups[2].type === "pipeline" ? groups[2].exec.tool : "").toBe("short_fiction_run");
+    expect(groups).toHaveLength(3);
+    expect(groups.map((group) => group.type)).toEqual(["utilities", "pipeline", "utilities"]);
+    expect(groups[1].type === "pipeline" ? groups[1].exec.tool : "").toBe("short_fiction_run");
   });
 
   it("renders play tools as visible pipeline cards", () => {
@@ -179,7 +177,7 @@ describe("groupChronologically", () => {
     expect(html).toContain("已完成第 1 章：雨棚");
   });
 
-  it("extracts generated cover details from public short fiction tools", () => {
+  it("extracts generated artifact details from public short fiction tools", () => {
     const exec = makeExec({
       id: "short-1",
       tool: "short_fiction_run",
@@ -189,7 +187,6 @@ describe("groupChronologically", () => {
         storyId: "demo-story",
         finalMarkdownPath: "shorts/demo-story/final/full.md",
         salesPackagePath: "shorts/demo-story/final/sales-package.md",
-        coverImagePath: "shorts/demo-story/final/cover.png",
       },
     });
 
@@ -198,7 +195,6 @@ describe("groupChronologically", () => {
       storyId: "demo-story",
       finalMarkdownPath: "shorts/demo-story/final/full.md",
       salesPackagePath: "shorts/demo-story/final/sales-package.md",
-      coverImagePath: "shorts/demo-story/final/cover.png",
     });
   });
 
@@ -376,7 +372,6 @@ describe("groupChronologically", () => {
             direction: "婚姻反杀",
             chapters: 12,
             charsPerChapter: 1000,
-            cover: true,
           },
         },
       },
@@ -396,7 +391,6 @@ describe("groupChronologically", () => {
           direction: "婚姻反杀",
           chapters: 12,
           charsPerChapter: 1000,
-          cover: true,
         },
       },
     });

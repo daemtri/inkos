@@ -231,7 +231,7 @@ describe("buildPartsFromEvents", () => {
     const details = {
       kind: "short_fiction_created",
       storyId: "demo",
-      coverImagePath: "shorts/demo/final/cover.png",
+      finalMarkdownPath: "shorts/demo/final/full.md",
     };
     const parts = buildPartsFromEvents([
       { type: "tool:start", id: "t1", tool: "short_fiction_run" },

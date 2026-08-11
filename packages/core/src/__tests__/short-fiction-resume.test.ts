@@ -65,7 +65,7 @@ describe("short fiction resume + failure marker (C2)", () => {
     vi.spyOn(ShortFictionDraftReviewerAgent.prototype, "reviewDraft").mockResolvedValue("looks fine");
     vi.spyOn(ShortFictionDraftReviserAgent.prototype, "reviseDraft").mockResolvedValue(draft);
     vi.spyOn(ShortFictionPackagingAgent.prototype, "generatePackage").mockResolvedValue({
-      title: "电梯多一层", intro: "钩子", sellingPoints: ["反转"], coverPrompt: "", rawContent: "",
+      title: "电梯多一层", intro: "钩子", sellingPoints: ["反转"], rawContent: "",
     });
   }
 
@@ -87,7 +87,7 @@ describe("short fiction resume + failure marker (C2)", () => {
 
     const result = await runShortFictionProduction({
       projectRoot: root, direction: "恐怖短篇", storyId: "elevator",
-      chapterCount: CH, charsPerChapter: 1000, cover: false, runtimes: runtimes(root),
+      chapterCount: CH, charsPerChapter: 1000, runtimes: runtimes(root),
     });
 
     expect(createOutline).not.toHaveBeenCalled();   // outline resumed from disk
@@ -104,7 +104,7 @@ describe("short fiction resume + failure marker (C2)", () => {
 
     await expect(runShortFictionProduction({
       projectRoot: root, direction: "恐怖短篇", storyId: "elevator",
-      chapterCount: CH, charsPerChapter: 1000, cover: false, runtimes: runtimes(root),
+      chapterCount: CH, charsPerChapter: 1000, runtimes: runtimes(root),
     })).rejects.toThrow(/503/);
 
     const status = JSON.parse(await readFile(join(root, "shorts", "elevator", "status.json"), "utf-8"));
@@ -122,12 +122,12 @@ describe("short fiction resume + failure marker (C2)", () => {
     vi.spyOn(ShortFictionDraftReviewerAgent.prototype, "reviewDraft").mockResolvedValue("looks fine");
     vi.spyOn(ShortFictionDraftReviserAgent.prototype, "reviseDraft").mockResolvedValue(complete);
     vi.spyOn(ShortFictionPackagingAgent.prototype, "generatePackage").mockResolvedValue({
-      title: "电梯多一层", intro: "钩子", sellingPoints: ["反转"], coverPrompt: "", rawContent: "",
+      title: "电梯多一层", intro: "钩子", sellingPoints: ["反转"], rawContent: "",
     });
 
     await runShortFictionProduction({
       projectRoot: root, direction: "恐怖短篇", storyId: "elevator",
-      chapterCount: CH, charsPerChapter: 1000, cover: false, runtimes: runtimes(root),
+      chapterCount: CH, charsPerChapter: 1000, runtimes: runtimes(root),
     });
 
     expect(continueDraft).toHaveBeenCalled();
@@ -149,12 +149,12 @@ describe("short fiction resume + failure marker (C2)", () => {
     vi.spyOn(ShortFictionDraftReviewerAgent.prototype, "reviewDraft").mockResolvedValue("looks fine");
     vi.spyOn(ShortFictionDraftReviserAgent.prototype, "reviseDraft").mockResolvedValue(complete);
     vi.spyOn(ShortFictionPackagingAgent.prototype, "generatePackage").mockResolvedValue({
-      title: "电梯多一层", intro: "钩子", sellingPoints: ["反转"], coverPrompt: "", rawContent: "",
+      title: "电梯多一层", intro: "钩子", sellingPoints: ["反转"], rawContent: "",
     });
 
     await runShortFictionProduction({
       projectRoot: root, direction: "恐怖短篇", storyId: "elevator",
-      chapterCount: CH, charsPerChapter: 1000, cover: false, runtimes: runtimes(root),
+      chapterCount: CH, charsPerChapter: 1000, runtimes: runtimes(root),
     });
 
     expect(continueDraft).toHaveBeenCalledTimes(2);
@@ -171,12 +171,12 @@ describe("short fiction resume + failure marker (C2)", () => {
     vi.spyOn(ShortFictionDraftReviewerAgent.prototype, "reviewDraft").mockResolvedValue("looks fine");
     vi.spyOn(ShortFictionDraftReviserAgent.prototype, "reviseDraft").mockResolvedValue(invalidRevision);
     vi.spyOn(ShortFictionPackagingAgent.prototype, "generatePackage").mockResolvedValue({
-      title: "电梯多一层", intro: "钩子", sellingPoints: ["反转"], coverPrompt: "", rawContent: "",
+      title: "电梯多一层", intro: "钩子", sellingPoints: ["反转"], rawContent: "",
     });
 
     await runShortFictionProduction({
       projectRoot: root, direction: "恐怖短篇", storyId: "elevator",
-      chapterCount: CH, charsPerChapter: 1000, cover: false, runtimes: runtimes(root),
+      chapterCount: CH, charsPerChapter: 1000, runtimes: runtimes(root),
     });
 
     const warning = await readFile(join(root, "shorts", "elevator", "reviews", "draft-v002-warning.md"), "utf-8");
@@ -192,11 +192,11 @@ describe("short fiction resume + failure marker (C2)", () => {
 
     const result = await runShortFictionProduction({
       projectRoot: root, direction: "恐怖短篇", storyId: "elevator",
-      chapterCount: CH, charsPerChapter: 1000, cover: false, runtimes: runtimes(root),
+      chapterCount: CH, charsPerChapter: 1000, runtimes: runtimes(root),
     });
 
     expect(writeDraft).not.toHaveBeenCalled();       // nothing regenerated
-    expect(result.coverError).toBe("already-complete");
+    expect(result.storyId).toBe("elevator");
   });
 
   it("does not skip a previously failed run just because final/full.md exists", async () => {
@@ -210,10 +210,10 @@ describe("short fiction resume + failure marker (C2)", () => {
 
     const result = await runShortFictionProduction({
       projectRoot: root, direction: "恐怖短篇", storyId: "elevator",
-      chapterCount: CH, charsPerChapter: 1000, cover: false, runtimes: runtimes(root),
+      chapterCount: CH, charsPerChapter: 1000, runtimes: runtimes(root),
     });
 
-    expect(result.coverError).toBe("disabled");
+    expect(result.storyId).toBe("elevator");
     expect(packageSpy).toHaveBeenCalled();
     await expect(access(join(root, "shorts", "elevator", "final", "sales-package.md"))).resolves.toBeUndefined();
   });

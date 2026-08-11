@@ -1,6 +1,6 @@
 import { writeFile, mkdir } from "node:fs/promises";
 import { join, dirname, relative, isAbsolute, sep } from "node:path";
-import { generateImageFromPrompt, resolveCoverGenerationRequest } from "../pipeline/short-fiction-runner.js";
+import { generateImageFromPrompt, resolveCoverGenerationRequest } from "../llm/image-generation.js";
 import type { StoryNode } from "./graph-schema.js";
 import type { StoryGraphDelta } from "./delta.js";
 

@@ -276,7 +276,6 @@ describe("runAgentSession cache — bookId switch", () => {
     evictAgentCache("book-create-confirmed-session");
     evictAgentCache("short-session");
     evictAgentCache("short-confirmed-session");
-    evictAgentCache("cover-confirmed-session");
     evictAgentCache("suppress-session");
     evictAgentCache("play-session");
     evictAgentCache("play-active-session");
@@ -1034,24 +1033,6 @@ describe("runAgentSession cache — bookId switch", () => {
     expect(agentInstances[0].state.tools.map((tool: any) => tool.name)).toEqual([
       "short_fiction_run",
     ]);
-
-    await runAgentSession(
-      {
-        sessionId: "cover-confirmed-session",
-        bookId: null,
-        sessionKind: "short",
-        actionSource: "button",
-        requestedIntent: "generate_cover",
-        language: "zh",
-        pipeline,
-        projectRoot,
-        model,
-      },
-      "确认生成封面",
-    );
-    expect(agentInstances[1].state.tools.map((tool: any) => tool.name)).toEqual([
-      "generate_cover",
-    ]);
   });
 
   it("exposes play_start only after play-start confirmation", async () => {
@@ -1088,7 +1069,6 @@ describe("runAgentSession cache — bookId switch", () => {
 
     expect(agentInstances[0].state.tools.map((tool: any) => tool.name)).toEqual([
       "sub_agent",
-      "generate_cover",
       "read",
       "write_truth_file",
       "rename_entity",
@@ -1140,7 +1120,6 @@ describe("runAgentSession cache — bookId switch", () => {
     expect(agentInstances).toHaveLength(2);
     expect(agentInstances[1].state.tools.map((tool: any) => tool.name)).toEqual([
       "sub_agent",
-      "generate_cover",
       "read",
       "write_truth_file",
       "rename_entity",

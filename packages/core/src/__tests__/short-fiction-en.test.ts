@@ -182,7 +182,6 @@ describe("short-fiction runner English branch", () => {
       direction: "haunted elevator",
       language: "en",
       charsPerChapter: 1000,
-      cover: false,
       runtimes: runtimes(root),
     })).rejects.toThrow(/charsPerChapter must be an integer between 600 and 800/);
   });
@@ -208,7 +207,7 @@ describe("short-fiction runner English branch", () => {
     vi.spyOn(ShortFictionDraftReviewerAgent.prototype, "reviewDraft").mockResolvedValue("reads fine");
     vi.spyOn(ShortFictionDraftReviserAgent.prototype, "reviseDraft").mockResolvedValue(draft);
     vi.spyOn(ShortFictionPackagingAgent.prototype, "generatePackage").mockResolvedValue({
-      title: "The Extra Floor", intro: "An elevator hook.", sellingPoints: ["reversal"], coverPrompt: "", rawContent: "",
+      title: "The Extra Floor", intro: "An elevator hook.", sellingPoints: ["reversal"], rawContent: "",
     });
 
     await runShortFictionProduction({
@@ -216,7 +215,6 @@ describe("short-fiction runner English branch", () => {
       direction: "haunted elevator",
       storyId: "extra-floor",
       chapterCount: CH,
-      cover: false,
       language: "en",
       runtimes: runtimes(root),
     });

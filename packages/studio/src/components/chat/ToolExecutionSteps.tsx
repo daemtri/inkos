@@ -84,28 +84,13 @@ function formatDuration(startedAt: number, completedAt?: number): string {
   return secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s`;
 }
 
-function encodeProjectPath(path: string): string {
-  return path.split("/").map((part) => encodeURIComponent(part)).join("/");
-}
-
-function extractResultPath(result: string | undefined, label: string): string | null {
-  if (!result) return null;
-  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = result.match(new RegExp(`^${escaped}:\\s*(.+)$`, "im"));
-  const path = match?.[1]?.trim();
-  return path || null;
-}
-
 export interface GeneratedArtifactDetails {
-  readonly kind: "short_fiction_created" | "cover_generated" | "script_created" | "storyboard_created" | "interactive_film_created";
+  readonly kind: "short_fiction_created" | "script_created" | "storyboard_created" | "interactive_film_created";
   readonly title?: string;
   readonly storyId?: string;
   readonly projectId?: string;
   readonly finalMarkdownPath?: string;
   readonly salesPackagePath?: string;
-  readonly coverPromptPath?: string;
-  readonly coverImagePath?: string;
-  readonly coverError?: string;
   readonly specPath?: string;
   readonly scriptPath?: string;
   readonly storyboardPath?: string;
@@ -207,12 +192,11 @@ function proposedTargetRouteField(record: Record<string, unknown>): ProposedActi
 }
 
 export function getGeneratedArtifactDetails(exec: ToolExecution): GeneratedArtifactDetails | null {
-  if (!["short_fiction_run", "generate_cover", "script_create", "storyboard_create", "interactive_film_create"].includes(exec.tool)) return null;
+  if (!["short_fiction_run", "script_create", "storyboard_create", "interactive_film_create"].includes(exec.tool)) return null;
   if (!exec.details || typeof exec.details !== "object") return null;
   const record = exec.details as Record<string, unknown>;
   if (
     record.kind !== "short_fiction_created"
-    && record.kind !== "cover_generated"
     && record.kind !== "script_created"
     && record.kind !== "storyboard_created"
     && record.kind !== "interactive_film_created"
@@ -224,9 +208,6 @@ export function getGeneratedArtifactDetails(exec: ToolExecution): GeneratedArtif
     projectId: stringField(record, "projectId"),
     finalMarkdownPath: stringField(record, "finalMarkdownPath"),
     salesPackagePath: stringField(record, "salesPackagePath"),
-    coverPromptPath: stringField(record, "coverPromptPath"),
-    coverImagePath: stringField(record, "coverImagePath"),
-    coverError: stringField(record, "coverError"),
     specPath: stringField(record, "specPath"),
     scriptPath: stringField(record, "scriptPath"),
     storyboardPath: stringField(record, "storyboardPath"),
@@ -299,39 +280,6 @@ function ScriptStoryboardResultPreview({ exec, onOpenFilmStudio }: { exec: ToolE
           ))}
         </div>
       )}
-    </div>
-  );
-}
-
-function ShortFictionResultPreview({ exec }: { exec: ToolExecution }) {
-  if (!["short_fiction_run", "generate_cover"].includes(exec.tool) || exec.status !== "completed") return null;
-  const details = getGeneratedArtifactDetails(exec);
-  const coverPath = details?.coverImagePath ?? extractResultPath(exec.result, "Cover image");
-  const coverError = details?.coverError ?? extractResultPath(exec.result, "Cover image reason");
-  if (!coverPath || !/\.(png|jpe?g|webp)$/iu.test(coverPath)) {
-    if (!coverError) return null;
-    return (
-      <div className="mx-3 mb-3 mt-1 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive">
-        {tr("封面未生成：", "Cover not generated: ")}{coverError}
-      </div>
-    );
-  }
-
-  const coverUrl = buildApiUrl(`/project/files/${encodeProjectPath(coverPath)}`);
-  if (!coverUrl) return null;
-  const title = details?.title ?? details?.storyId ?? tr("短篇封面", "Short fiction cover");
-
-  return (
-    <div className="mx-3 mb-3 mt-1 overflow-hidden rounded-xl border border-border/40 bg-background/70">
-      <img
-        src={coverUrl}
-        alt={title}
-        className="block max-h-[360px] w-full object-contain bg-muted/20"
-        loading="lazy"
-      />
-      <div className="border-t border-border/40 px-3 py-2 text-[11px] text-muted-foreground break-all">
-        {coverPath}
-      </div>
     </div>
   );
 }
@@ -630,7 +578,6 @@ function isPipelineTool(tool: string): boolean {
     || tool === "script_create"
     || tool === "storyboard_create"
     || tool === "interactive_film_create"
-    || tool === "generate_cover"
     || tool === "play_edit"
     || tool === "play_start"
     || tool === "play_revise"
@@ -733,7 +680,6 @@ function PipelineExecution({
         onProposedAction={onProposedAction}
         onRejectProposedAction={onRejectProposedAction}
       />
-      <ShortFictionResultPreview exec={exec} />
       <ScriptStoryboardResultPreview exec={exec} onOpenFilmStudio={onOpenFilmStudio} />
       <PlayResultPreview exec={exec} />
       <PlayEditPreview exec={exec} />

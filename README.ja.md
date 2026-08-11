@@ -34,7 +34,7 @@ InkOS は、物語創作と多言語翻訳のための AI Agent システムで�
 
 InkOS 1.7 は、言語をまたぐ納品、長編の未来予測、継続的な共同作業を同じ Agent ワークベンチに統合します。作品全体の翻訳、複数の非正史ルート比較、バックグラウンド執筆中の会話継続に加え、Chat から資料の読解、既存原稿の取り込み、プロンプト調整、章の修正、創作状態の安全な復元を行えます。
 
-- **モデル設定** — Studio はサービス設定、モデルルーティング、表紙サービス、[kkaiapi](https://en.kkaiapi.com/) / OpenRouter などのモデル集約入口、カスタム OpenAI-compatible エンドポイントに対応します。
+- **モデル設定** — Studio はサービス設定、モデルルーティング、画像サービス、[kkaiapi](https://en.kkaiapi.com/) / OpenRouter などのモデル集約入口、カスタム OpenAI-compatible エンドポイントに対応します。
 - **物語の複数ルート予測**：Studio Chat と CLI で現在の正史から 2-5 本の独立した未来を作成、再検証、選択し、章のビート、人物の決断、予想される変化、リスク、作者意図との一致度を比較できます。採用時に保存されるのは計画だけで、本文、基礎設定、物語状態を先に変更しません。
 - **完全な翻訳ワークベンチ**：EPUB、テキスト型 PDF、TXT、Markdown を読み込み、章と意味段落ごとに翻訳します。用語集、対照レビュー報告、TXT / Markdown / EPUB 出力に対応し、Studio、Chat、`inkos translate init / run / export` が同じ機能を共有します。
 - **クロスランゲージのネイティブ創作**：短編、脚本、絵コンテ、インタラクティブ影遊に英語向けプロンプト経路を追加し、Studio の動的表示と CLI の言語フォールバックも同時に整備しました。
@@ -62,7 +62,6 @@ v1.6.0 は、InkOS を開放世界 Play からさらにインタラクティブ�
 </p>
 
 <p align="center">
-  <img src="assets/inkos-short-demo-cover.png" width="210" alt="InkOS Short 表紙例">
   <img src="assets/play-openworld-warcraft.png" width="210" alt="InkOS Play ファンタジー開放世界例">
   <img src="assets/play-openworld-romance.png" width="210" alt="InkOS Play 恋愛例">
   <img src="assets/play-openworld-detective.png" width="210" alt="InkOS Play 探偵例">
@@ -72,13 +71,13 @@ v1.6.0 は、InkOS を開放世界 Play からさらにインタラクティブ�
 
 **物語の複数ルート予測** — 次章を書く前に、現在の正史から互いに独立した 2-5 本の未来ルートを生成し、章のビート、人物の決断、予想される変化、リスク、作者意図との一致度を Studio Chat で横並びに比較できます。ルートを採用しても保存されるのは `selected-branch-plan.md` だけで、本文、アウトライン、正史状態は変更されません。正史が変わると古い予測は stale として扱われます。
 
-**InkOS Short** — Studio Chat と CLI から独立した短編パッケージを生成できます。完成本文、アウトライン記録、レビュー記録、あらすじ、セールスポイント、表紙プロンプト、表紙画像に対応します。
+**InkOS Short** — Studio Chat と CLI から独立した短編パッケージを生成できます。完成本文、アウトライン記録、レビュー記録、あらすじ、セールスポイントに対応します。
 
 **InkOS Play** — 自然言語の世界契約から、開放世界や分岐型インタラクティブ物語を開始できます。時間の進み方、キャラクター agent、所持品、証拠、関係性、シーン状態、ビジュアルルール、自由行動、選択肢、画像生成に対応します。
 
 **インタラクティブ影遊** — アイデア、脚本、または小説素材から、分岐シーン、変数、エンディング、画像プロンプト、ノード画像、エクスポート可能なプロジェクトを生成します。
 
-**Studio Chat** — 質問応答だけでなく、長編作成、Short、表紙生成、Play、永続テキスト編集を扱います。重いアクションは確認してから実行し、ツール結果がないのに成功したとは扱いません。
+**Studio Chat** — 質問応答だけでなく、長編作成、Short、Play、永続テキスト編集を扱います。重いアクションは確認してから実行し、ツール結果がないのに成功したとは扱いません。
 
 **Agent Skills とリサーチ** — `.agents/skills/`、標準 AgentSkills / OpenClaw ディレクトリ、または Studio のフォルダー導入から標準 `SKILL.md` を追加できます。Chat Agent は意図に応じて利用し、`@skill-id` で強制使用もできます。外部 skill のスクリプトは自動実行しません。外部事実が必要な場合は出典付き Markdown リサーチレポートを生成できます。
 
@@ -191,7 +190,7 @@ inkos config show-models        # 現在のルーティングを表示
 
 **Studio Chat + CLI + TUI は同じ実行面を共有します**
 
-- **Studio Chat**：相談、書籍作成、Short、表紙、Play、永続ファイル編集を一つのチャット入口から扱えます。重い操作は確認カードを表示します。
+- **Studio Chat**：相談、書籍作成、Short、Play、永続ファイル編集を一つのチャット入口から扱えます。重い操作は確認カードを表示します。
 - **創作入口**：長編、短編、二次創作、番外、文体模倣、続き書き、分岐インタラクション、開放世界を Studio の上部入口から開始できます。
 - **TUI ダッシュボード**：`inkos tui` でキーボード中心のフルスクリーン端末 UI を開けます。
 - **外部 Agent 入口**：`inkos interact --json --message "..."` は OpenClaw など外部 agent 向けの構造化入口です。
@@ -229,25 +228,7 @@ inkos short run \
   --chars 1000
 ```
 
-生成物は `shorts/<story-name>/final/` に保存され、`full.md`、`sales-package.md`、`cover-prompt.md`、表紙生成が設定済みの場合は `cover.png` が含まれます。
-
-### 表紙だけを作る
-
-既存タイトルやあらすじに対して表紙だけを作る場合は、短編本文を再生成せず、Studio チャットで直接依頼できます：
-
-```text
-「彼が後悔した離婚届」の短編表紙を作って。現代都市、強い逆転感。
-```
-
-表紙ツールは `covers/<title>/cover-prompt.md` と `covers/<title>/cover.png` を生成します。表紙サービス未設定の場合は、先に Studio のモデル設定で表紙サービスと API Key を設定してください。
-
-生成後もチャットで表紙プロンプトを調整できます。例：「人物をもっと近く、タイトル文字を大きく、冷たい笑みにして」。InkOS は新しい指示を `coverPrompt` として渡し、`cover-prompt.md` を更新して表紙を再生成します。本文を書き直す必要はありません。
-
-<p align="center">
-  <img src="assets/inkos-short-demo-cover.png" width="260" alt="InkOS Short 表紙例">
-  <img src="assets/play-openworld-warcraft.png" width="260" alt="InkOS Play 開放世界例">
-  <img src="assets/play-openworld-detective.png" width="260" alt="InkOS Play 探偵例">
-</p>
+生成物は `shorts/<story-name>/final/` に保存され、`full.md`、`sales-package.md` が含まれます。
 
 ### 開放世界 / 分岐型インタラクションを始める
 
@@ -288,7 +269,7 @@ InkOS には10種類の英語ネイティブジャンルプロファイルが同
 
 ### Studio Chat + Action Surface
 
-Studio Chat は単なる Q&A ではありません。長編作成、Short、表紙生成、Play 起動、永続テキストファイル編集を扱い、重いアクションの前に確認を出します。普通の相談は普通に回答し、明確な創作アクションだけがツール実行になります。
+Studio Chat は単なる Q&A ではありません。長編作成、Short、Play 起動、永続テキストファイル編集を扱い、重いアクションの前に確認を出します。普通の相談は普通に回答し、明確な創作アクションだけがツール実行になります。
 
 ### InkOS Play：開放世界と分岐インタラクション
 
@@ -472,7 +453,7 @@ inkos agent "次の章を書いて、ボス戦と戦利品の分配にフォー�
 inkos agent "1つの呪文しか使えない魔法使いのプログレッションファンタジーを作成して"
 ```
 
-Agent モードは現在の session 種別に応じてツールを絞ります。書籍作成、コントロールサーフェス編集、計画、コンテキスト編成、執筆、監査、修正、Short、表紙、Play は、必要な場面でだけ利用可能になります。推奨フローは、まずコントロールサーフェスを調整し、次に `plan` / `compose`、最後にドラフトのみかフルパイプライン執筆を選ぶ形です。
+Agent モードは現在の session 種別に応じてツールを絞ります。書籍作成、コントロールサーフェス編集、計画、コンテキスト編成、執筆、監査、修正、Short、Play は、必要な場面でだけ利用可能になります。推奨フローは、まずコントロールサーフェスを調整し、次に `plan` / `compose`、最後にドラフトのみかフルパイプライン執筆を選ぶ形です。
 
 ### 4. Studio Play モード
 
@@ -485,13 +466,12 @@ Studio の **Open World** と **Branching Interactive** は、先に書籍を作
 </p>
 
 <p align="center">
-  <img src="assets/inkos-short-demo-cover.png" width="230" alt="短編表紙の出力例">
   <img src="assets/play-openworld-romance.png" width="230" alt="恋愛インタラクティブ世界の出力例">
   <img src="assets/play-openworld-detective.png" width="230" alt="探偵インタラクティブ世界の出力例">
   <img src="assets/play-item-warcraft.png" width="230" alt="インタラクティブ世界のアイテム画像出力例">
 </p>
 
-最初の画像はローカル Studio のスクリーンショットです。ほかの画像は InkOS Short と InkOS Play のローカル実行で生成された実例で、短編表紙、開放世界シーン、探偵証拠ビジュアル、アイテム画像を示します。
+最初の画像はローカル Studio のスクリーンショットです。ほかの画像は InkOS Play のローカル実行で生成された実例で、開放世界シーン、探偵証拠ビジュアル、アイテム画像を示します。
 
 ## CLIリファレンス
 

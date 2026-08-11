@@ -11,7 +11,6 @@ describe("buildAgentSystemPrompt", () => {
       expect(prompt).toContain("propose_action");
       expect(prompt).not.toContain("sub_agent");
       expect(prompt).not.toContain("short_fiction_run");
-      expect(prompt).not.toContain("generate_cover：");
       expect(prompt).not.toContain("play_start：");
       expect(prompt).not.toContain("architect");
     });
@@ -32,7 +31,6 @@ describe("buildAgentSystemPrompt", () => {
       expect(prompt).toContain("propose_action");
       expect(prompt).not.toContain("sub_agent");
       expect(prompt).not.toContain("short_fiction_run");
-      expect(prompt).not.toContain("generate_cover:");
       expect(prompt).not.toContain("play_start:");
       expect(prompt).not.toContain("architect");
     });
@@ -188,7 +186,6 @@ describe("buildAgentSystemPrompt", () => {
       expect(prompt).toContain("主角");
       expect(prompt).toContain("核心冲突");
       expect(prompt).not.toContain("short_fiction_run");
-      expect(prompt).not.toContain("generate_cover");
       expect(prompt).not.toContain("play_start");
       expect(prompt).not.toContain("play_step");
     });
@@ -216,12 +213,11 @@ describe("buildAgentSystemPrompt", () => {
   });
 
   describe("short mode", () => {
-    it("gates short-fiction and cover production behind a confirmation proposal", () => {
+    it("gates short-fiction production behind a confirmation proposal", () => {
       const prompt = buildAgentSystemPrompt(null, "zh", "short");
       expect(prompt).toContain("InkOS Short 助手");
       expect(prompt).toContain("propose_action");
       expect(prompt).toContain("short_run");
-      expect(prompt).toContain("generate_cover");
       expect(prompt).toContain("让用户确认");
       expect(prompt).not.toContain("short_fiction_run");
       expect(prompt).not.toContain("sub_agent");
@@ -235,19 +231,6 @@ describe("buildAgentSystemPrompt", () => {
         requestedIntent: "short_run",
       });
       expect(prompt).toContain("short_fiction_run");
-      expect(prompt).not.toContain("generate_cover：");
-      expect(prompt).not.toContain("sub_agent");
-      expect(prompt).not.toContain("play_start");
-    });
-
-    it("runs generate_cover only after cover generation is confirmed", () => {
-      const prompt = buildAgentSystemPrompt(null, "zh", "short", {
-        actionSource: "button",
-        requestedIntent: "generate_cover",
-      });
-      expect(prompt).toContain("generate_cover");
-      expect(prompt).toContain("不要重跑正文");
-      expect(prompt).not.toContain("short_fiction_run");
       expect(prompt).not.toContain("sub_agent");
       expect(prompt).not.toContain("play_start");
     });
@@ -383,7 +366,6 @@ describe("buildAgentSystemPrompt", () => {
       expect(prompt).toContain("不要先用普通文字整理一遍再等用户二次确认");
       expect(prompt).not.toContain("play_step：");
       expect(prompt).not.toContain("short_fiction_run");
-      expect(prompt).not.toContain("generate_cover");
       expect(prompt).not.toContain("sub_agent");
       expect(prompt).not.toContain("architect");
     });
@@ -403,7 +385,6 @@ describe("buildAgentSystemPrompt", () => {
       expect(prompt).not.toContain("propose_action");
       expect(prompt).not.toContain("play_start：");
       expect(prompt).not.toContain("short_fiction_run");
-      expect(prompt).not.toContain("generate_cover");
       expect(prompt).not.toContain("sub_agent");
       expect(prompt).not.toContain("architect");
     });
@@ -435,7 +416,6 @@ describe("buildAgentSystemPrompt", () => {
       expect(prompt).toContain("chapterNumber");
       expect(prompt).toContain("anti-detect");
       expect(prompt).toContain("approvedOnly");
-      expect(prompt).toContain("generate_cover");
       expect(prompt).toContain("read");
       expect(prompt).toContain("write_truth_file");
       expect(prompt).toContain("rename_entity");
@@ -470,7 +450,6 @@ describe("buildAgentSystemPrompt", () => {
       const prompt = buildAgentSystemPrompt("novel", "en", "book");
       expect(prompt).toContain("working on book \"novel\"");
       expect(prompt).toContain("sub_agent");
-      expect(prompt).toContain("generate_cover");
       expect(prompt).not.toContain("short_fiction_run");
       expect(prompt).not.toContain("play_start");
       expect(prompt).not.toMatch(/agent="architect"/);
@@ -488,7 +467,6 @@ describe("buildAgentSystemPrompt", () => {
       expect(prompt).toContain("grep");
       expect(prompt).toContain("ls");
       expect(prompt).not.toContain("sub_agent");
-      expect(prompt).not.toContain("generate_cover");
       expect(prompt).not.toContain("short_fiction_run");
       expect(prompt).not.toContain("play_start");
     });

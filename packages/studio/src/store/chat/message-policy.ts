@@ -19,7 +19,6 @@ const CONFIRMED_PRODUCTION_INTENTS: ReadonlySet<ChatRequestedIntent> = new Set([
   "interactive_film_create",
   "translation_create",
   "play_start",
-  "generate_cover",
   "draft_structure",
   "connect_choice",
   "remove_node",

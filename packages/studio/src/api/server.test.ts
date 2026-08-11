@@ -290,7 +290,6 @@ vi.mock("@actalk/inkos-core", async (importOriginal) => {
     abortAgentSession: abortAgentSessionMock,
     createSubAgentTool: actual.createSubAgentTool,
     createShortFictionRunTool: createShortFictionRunToolMock,
-    createGenerateCoverTool: actual.createGenerateCoverTool,
     createPlayStartTool: actual.createPlayStartTool,
     PlayRunner: MockPlayRunner,
     ConsolidatorAgent: MockConsolidatorAgent,
@@ -3209,7 +3208,6 @@ describe("createStudioServer daemon lifecycle", () => {
           shortRun: {
             direction: "an office suspense story about forged expense records",
             chapters: 12,
-            cover: false,
           },
         },
       }),
@@ -3460,7 +3458,7 @@ describe("createStudioServer daemon lifecycle", () => {
         sessionKind: "short",
         actionSource: "button",
         requestedIntent: "short_run",
-        actionPayload: { shortRun: { direction: "雨夜档案馆悬疑", chapters: 12, cover: false } },
+        actionPayload: { shortRun: { direction: "雨夜档案馆悬疑", chapters: 12 } },
       }),
     });
     await vi.waitFor(async () => {
@@ -3516,7 +3514,7 @@ describe("createStudioServer daemon lifecycle", () => {
         sessionKind: "short",
         actionSource: "button",
         requestedIntent: "short_run",
-        actionPayload: { shortRun: { direction: "雨夜档案馆悬疑", chapters: 12, cover: false } },
+        actionPayload: { shortRun: { direction: "雨夜档案馆悬疑", chapters: 12 } },
       }),
     });
     await vi.waitFor(async () => {
@@ -3585,7 +3583,7 @@ describe("createStudioServer daemon lifecycle", () => {
         sessionKind: "short",
         actionSource: "button",
         requestedIntent: "short_run",
-        actionPayload: { shortRun: { direction: "会失败的短篇", chapters: 12, cover: false } },
+        actionPayload: { shortRun: { direction: "会失败的短篇", chapters: 12 } },
       }),
     });
 
@@ -4016,7 +4014,7 @@ describe("createStudioServer daemon lifecycle", () => {
         sessionKind: "short",
         actionSource: "button",
         requestedIntent: "short_run",
-        actionPayload: { shortRun: { direction: "冷库账本悬疑", cover: false } },
+        actionPayload: { shortRun: { direction: "冷库账本悬疑" } },
       }),
     });
     expect(taskResponse.status).toBe(200);
@@ -4093,7 +4091,7 @@ describe("createStudioServer daemon lifecycle", () => {
         sessionKind: "short",
         actionSource: "button",
         requestedIntent: "short_run",
-        actionPayload: { shortRun: { direction: "冷库账本悬疑", cover: false } },
+        actionPayload: { shortRun: { direction: "冷库账本悬疑" } },
       }),
     });
     await vi.waitFor(() => expect(capturedSignal).toBeDefined());
@@ -4152,7 +4150,7 @@ describe("createStudioServer daemon lifecycle", () => {
         sessionKind: "short",
         actionSource: "button",
         requestedIntent: "short_run",
-        actionPayload: { shortRun: { direction: "冷库账本悬疑", cover: false } },
+        actionPayload: { shortRun: { direction: "冷库账本悬疑" } },
       }),
     });
     await vi.waitFor(async () => {
@@ -4229,7 +4227,7 @@ describe("createStudioServer daemon lifecycle", () => {
         sessionKind: "short",
         actionSource: "button",
         requestedIntent: "short_run",
-        actionPayload: { shortRun: { direction: "冷库账本悬疑", cover: false } },
+        actionPayload: { shortRun: { direction: "冷库账本悬疑" } },
       }),
     }));
   }
@@ -4909,34 +4907,6 @@ describe("createStudioServer daemon lifecycle", () => {
     expect(writeNextChapterMock).not.toHaveBeenCalled();
   });
 
-  it("handles explicit chat artifact edits only for content roots", async () => {
-    await mkdir(join(root, "covers", "demo"), { recursive: true });
-    await writeFile(join(root, "covers", "demo", "cover-prompt.md"), "标题字太小。\n", "utf-8");
-
-    const { createStudioServer } = await import("./server.js");
-    const app = createStudioServer(cloneProjectConfig() as never, root);
-
-    const response = await app.request("http://localhost/api/v1/agent", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        instruction: "把 covers/demo/cover-prompt.md 里的「标题字太小」改成「标题字压到最大」",
-        sessionId: "agent-session-1",
-        sessionKind: "edit",
-        requestedIntent: "edit_artifact",
-      }),
-    });
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toMatchObject({
-      response: expect.stringContaining("已直接编辑 covers/demo/cover-prompt.md"),
-    });
-    await expect(readFile(join(root, "covers", "demo", "cover-prompt.md"), "utf-8"))
-      .resolves.toContain("标题字压到最大");
-    expect(saveChapterIndexMock).not.toHaveBeenCalled();
-    expect(runAgentSessionMock).not.toHaveBeenCalled();
-  });
-
   it("handles explicit chat edits against role-card truth files", async () => {
     const rolePath = join(root, "books", "demo-book", "story", "roles", "主要角色", "林月.md");
     await mkdir(join(root, "books", "demo-book", "story", "roles", "主要角色"), { recursive: true });
@@ -4966,8 +4936,8 @@ describe("createStudioServer daemon lifecycle", () => {
   });
 
   it("does not bypass the agent for edit-shaped questions", async () => {
-    await mkdir(join(root, "covers", "demo"), { recursive: true });
-    await writeFile(join(root, "covers", "demo", "cover-prompt.md"), "标题字太小。\n", "utf-8");
+    await mkdir(join(root, "shorts", "demo"), { recursive: true });
+    await writeFile(join(root, "shorts", "demo", "brief.md"), "标题字太小。\n", "utf-8");
 
     const { createStudioServer } = await import("./server.js");
     const app = createStudioServer(cloneProjectConfig() as never, root);
@@ -4976,7 +4946,7 @@ describe("createStudioServer daemon lifecycle", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        instruction: "可以把 covers/demo/cover-prompt.md 里的「标题字太小」改成「标题字压到最大」吗？",
+        instruction: "可以把 shorts/demo/brief.md 里的「标题字太小」改成「标题字压到最大」吗？",
         sessionId: "agent-session-1",
       }),
     });
@@ -4985,7 +4955,7 @@ describe("createStudioServer daemon lifecycle", () => {
     await expect(response.json()).resolves.toMatchObject({
       response: "Agent response.",
     });
-    await expect(readFile(join(root, "covers", "demo", "cover-prompt.md"), "utf-8"))
+    await expect(readFile(join(root, "shorts", "demo", "brief.md"), "utf-8"))
       .resolves.toBe("标题字太小。\n");
     expect(runAgentSessionMock).toHaveBeenCalledOnce();
     expect(appendManualSessionMessagesMock).not.toHaveBeenCalled();

@@ -30,7 +30,6 @@ const TOOL_LABELS: Record<string, readonly [string, string]> = {
   context_compression: ["整理上下文", "Organize context"],
   propose_action: ["确认动作", "Confirm action"],
   short_fiction_run: ["短篇生产", "Short fiction run"],
-  generate_cover: ["生成封面", "Generate cover"],
   script_create: ["剧本创作", "Create script"],
   storyboard_create: ["分镜创作", "Create storyboard"],
   interactive_film_create: ["互动影游", "Interactive film"],
@@ -381,7 +380,6 @@ function completesProposedAction(exec: ToolExecution, action: string): boolean {
   if (action === "create_book") return exec.tool === "sub_agent" && exec.agent === "architect";
   if (action === "short_run") return exec.tool === "short_fiction_run";
   if (action === "play_start") return exec.tool === "play_start";
-  if (action === "generate_cover") return exec.tool === "generate_cover";
   if (action === "script_create") return exec.tool === "script_create";
   if (action === "storyboard_create") return exec.tool === "storyboard_create";
   if (action === "interactive_film_create") return exec.tool === "interactive_film_create";

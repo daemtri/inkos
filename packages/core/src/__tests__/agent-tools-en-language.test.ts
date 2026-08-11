@@ -28,8 +28,6 @@ const {
     finalMarkdownPath: "shorts/story-en/final/story.md",
     finalJsonPath: "shorts/story-en/final/story.json",
     salesPackagePath: "shorts/story-en/final/sales.md",
-    coverPromptPath: "shorts/story-en/final/cover-prompt.md",
-    coverImagePath: "shorts/story-en/final/cover.png",
   })),
   runScriptCreationMock: vi.fn(async (_options: Record<string, unknown>) => ({
     projectId: "script-en",
@@ -163,7 +161,6 @@ describe("agent tools language wiring (en parity)", () => {
         language: "en",
         chapters: 12,
         charsPerChapter: 650,
-        cover: false,
       },
     } as any);
 
@@ -186,7 +183,6 @@ describe("agent tools language wiring (en parity)", () => {
         direction: "an office suspense story about forged expense records",
         chapters: 12,
         charsPerChapter: 650,
-        cover: false,
       },
     } as any);
 
@@ -204,7 +200,6 @@ describe("agent tools language wiring (en parity)", () => {
         language: "en",
         chapters: 12,
         charsPerChapter: 650,
-        cover: false,
       },
     } as any);
 
@@ -226,7 +221,6 @@ describe("agent tools language wiring (en parity)", () => {
       shortRun: {
         direction: "an English office suspense story",
         language: "en",
-        cover: false,
       },
     } as any);
 
@@ -263,7 +257,6 @@ describe("agent tools language wiring (en parity)", () => {
           language: "en",
           chapters: 12,
           charsPerChapter: 650,
-          cover: false,
         },
       } as any,
     });

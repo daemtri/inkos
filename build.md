@@ -71,7 +71,32 @@ ls packages/studio/dist/api/index.js   # 服务端产物
 mkdir -p /data/inkos-project
 ```
 
-写入 `/app/inkos/.env`：
+在数据目录创建 `/data/inkos-project/inkos.json`（项目配置，Studio 首次访问会引导你在界面里配置模型服务）：
+
+```json
+{
+  "name": "inkos-project",
+  "version": "0.1.0",
+  "language": "zh",
+  "llm": {
+    "provider": "openai",
+    "service": "custom",
+    "configSource": "studio",
+    "baseUrl": "",
+    "model": "",
+    "apiFormat": "chat",
+    "stream": true
+  },
+  "notify": [],
+  "inputGovernanceMode": "v2",
+  "daemon": {
+    "schedule": { "radarCron": "0 */6 * * *", "writeCron": "*/15 * * * *" },
+    "maxConcurrentBooks": 3
+  }
+}
+```
+
+再创建 `/data/inkos-project/.env`（配置读取优先级：数据目录 `.env` > `~/.inkos/.env` > 进程环境变量）：
 
 ```bash
 INKOS_LLM_PROVIDER=openai
@@ -82,6 +107,8 @@ INKOS_LLM_MODEL=gpt-4o
 # 公网部署必须设置登录密码，否则任何人都能消耗你的 API 额度
 INKOS_STUDIO_PASSWORD=你的强密码
 ```
+
+> 注意：`.env` 放在**数据目录**下，不是代码目录。
 
 ## 5. pm2 常驻运行
 

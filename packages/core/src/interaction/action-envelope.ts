@@ -22,7 +22,6 @@ export const RequestedIntentSchema = z.enum([
   "short_run",
   "play_start",
   "play_step",
-  "generate_cover",
   "edit_artifact",
   "fanfic_init",
   "continuation_import",
@@ -81,7 +80,6 @@ export const ShortRunActionPayloadSchema = z.object({
   language: z.enum(["zh", "en"]).optional(),
   chapters: z.number().int().min(12).max(18).optional(),
   charsPerChapter: z.number().int().min(600).max(1200).optional(),
-  cover: z.boolean().optional(),
 }).strict().superRefine((payload, ctx) => {
   if (payload.language === undefined || payload.charsPerChapter === undefined) return;
   const { min, max } = shortRunCharsPerChapterRange(payload.language);
@@ -101,14 +99,6 @@ export const PlayStartActionPayloadSchema = z.object({
   mode: PlayModeSchema.optional(),
   initialScene: z.string().min(1).optional(),
   suggestedActions: z.array(z.string().min(1)).min(1).max(4).optional(),
-}).strict();
-
-export const GenerateCoverActionPayloadSchema = z.object({
-  title: z.string().min(1).optional(),
-  intro: z.string().min(1).optional(),
-  sellingPoints: z.string().min(1).optional(),
-  coverPrompt: z.string().min(1).optional(),
-  outputDir: z.string().min(1).optional(),
 }).strict();
 
 export const ScriptTargetFormatSchema = z.enum([
@@ -174,7 +164,6 @@ export const ActionPayloadSchema = z.object({
   writeNext: WriteNextActionPayloadSchema.optional(),
   shortRun: ShortRunActionPayloadSchema.optional(),
   playStart: PlayStartActionPayloadSchema.optional(),
-  generateCover: GenerateCoverActionPayloadSchema.optional(),
   scriptCreate: ScriptCreateActionPayloadSchema.optional(),
   storyboardCreate: StoryboardCreateActionPayloadSchema.optional(),
   interactiveFilmCreate: InteractiveFilmCreateActionPayloadSchema.optional(),

@@ -96,7 +96,7 @@ function CoverConfigCard() {
       .catch((error) => {
         if (cancelled) return;
         setStatus("error");
-        setMessage(error instanceof Error ? error.message : tr("读取封面配置失败", "Failed to load cover config"));
+        setMessage(error instanceof Error ? error.message : tr("读取配图配置失败", "Failed to load illustration config"));
       });
     return () => { cancelled = true; };
   }, []);
@@ -145,10 +145,10 @@ function CoverConfigCard() {
         }),
       });
       setStatus("saved");
-      setMessage(tr("封面配置已保存", "Cover config saved"));
+      setMessage(tr("配图配置已保存", "Illustration config saved"));
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : tr("保存封面配置失败", "Failed to save cover config"));
+      setMessage(error instanceof Error ? error.message : tr("保存配图配置失败", "Failed to save illustration config"));
     }
   };
 
@@ -158,11 +158,11 @@ function CoverConfigCard() {
     <section className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">{tr("封面生成", "Cover generation")}</h2>
+          <h2 className="text-sm font-medium text-foreground">{tr("配图服务", "Illustration service")}</h2>
           <p className="mt-1 text-xs text-muted-foreground/70">
             {tr(
-              "只配置封面通道和模型；封面尺寸由短篇封面提示词和内部默认处理。",
-              "Only configures the cover provider and model; cover size is handled by the short-story cover prompt and internal defaults.",
+              "配置 Play 开放世界与互动影游自动配图使用的生图通道和模型；图片尺寸由内部默认处理。",
+              "Configures the image provider and model used for automatic illustrations in Play open worlds and interactive films; image size is handled by internal defaults.",
             )}
           </p>
         </div>
@@ -187,7 +187,7 @@ function CoverConfigCard() {
           </select>
         </label>
         <label className="space-y-1.5">
-          <span className="block text-xs font-medium text-muted-foreground/70">{tr("封面模型", "Cover model")}</span>
+          <span className="block text-xs font-medium text-muted-foreground/70">{tr("配图模型", "Illustration model")}</span>
           <select
             value={model}
             onChange={(event) => setModel(event.target.value)}
@@ -211,8 +211,8 @@ function CoverConfigCard() {
         />
         <span className="block text-[11px] leading-5 text-muted-foreground/55">
           {tr(
-            "留空使用该服务的默认地址；自定义地址会作为封面生成 API 根路径。",
-            "Leave blank to use the provider default; a custom value becomes the cover generation API root.",
+            "留空使用该服务的默认地址；自定义地址会作为配图生成 API 根路径。",
+            "Leave blank to use the provider default; a custom value becomes the illustration API root.",
           )}
         </span>
       </label>
@@ -244,7 +244,7 @@ function CoverConfigCard() {
           className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
           {status === "saving" && <Loader2 size={12} className="animate-spin" />}
-          {tr("保存封面配置", "Save cover config")}
+          {tr("保存配图配置", "Save illustration config")}
         </button>
         {message && (
           <span className={`text-xs ${status === "error" ? "text-destructive" : "text-emerald-500"}`}>

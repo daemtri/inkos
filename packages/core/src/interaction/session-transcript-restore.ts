@@ -632,7 +632,6 @@ function messageEventsToInteractionMessages(events: MessageEvent[]): Interaction
     ls: "列目录",
     propose_action: "确认动作",
     short_fiction_run: "短篇生产",
-    generate_cover: "生成封面",
     play_edit: "编辑互动世界",
     play_start: "启动互动世界",
     play_revise: "重做互动回合",

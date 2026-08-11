@@ -477,15 +477,13 @@ export function buildShortFictionDraftRevisionFollowup(
 export function buildShortFictionPackageSystemPrompt(language: ShortFictionLanguage = "zh"): string {
   if (language === "en") {
     return [
-      "You are a short-fiction packaging editor. From the final draft you produce the synopsis, the selling points, and the cover-image prompt.",
+      "You are a short-fiction packaging editor. From the final draft you produce the synopsis and the selling points.",
       "Never invent a main title different from the draft's. All packaging must revolve around the draft's actual title and plot.",
-      "Think of the cover prompt as a mobile portrait book cover: 3:4 vertical, a large title zone, strong character emotion, one or two instantly recognizable props, high-contrast colors — not a movie poster.",
     ].join("\n");
   }
   return [
-    "你是短篇小说包装编辑，负责根据最终正文生成简介、卖点和封面提示词。",
+    "你是短篇小说包装编辑，负责根据最终正文生成简介和卖点。",
     "不要另起一个和正文不同的主标题。包装必须围绕正文实际标题和剧情。",
-    "封面提示词按手机端竖版书封思考：3:4 竖图、大标题区、强人物情绪、少量一眼可识别道具、高对比色彩，不要影视海报感。",
   ].join("\n");
 }
 
@@ -511,8 +509,6 @@ export function buildShortFictionPackageUserPrompt(
       "A 70-120 word platform synopsis that grabs the conflict, the pressure, and the payoff — never a spoiler-filled play-by-play.",
       "=== SHORT_FICTION_SELLING_POINTS ===",
       "- 3 to 6 selling points, one per line",
-      "=== SHORT_FICTION_COVER_PROMPT ===",
-      "An English cover-generation prompt: 3:4 portrait, main title zone, character emotion, props, color palette, typography style, and what to avoid.",
     ].join("\n");
   }
   return [
@@ -532,8 +528,6 @@ export function buildShortFictionPackageUserPrompt(
     "100-180字平台简介，直接抓冲突、压迫和回报，不要剧透成流水账。",
     "=== SHORT_FICTION_SELLING_POINTS ===",
     "- 3到6条卖点，每条一行",
-    "=== SHORT_FICTION_COVER_PROMPT ===",
-    "中文封面生成提示词：3:4竖图，主标题区，人物情绪，道具，配色，字体风格，避免事项。",
   ].join("\n");
 }
 

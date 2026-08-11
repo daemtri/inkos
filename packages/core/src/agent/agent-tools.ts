@@ -14,7 +14,7 @@ import { writeExportArtifact } from "../interaction/export-artifact.js";
 import { assertSafeBookId, deriveBookIdFromTitle } from "../utils/book-id.js";
 import { safeChildPath } from "../utils/path-safety.js";
 import { normalizePlatformId, normalizePlatformOrOther } from "../models/book.js";
-import { generateShortFictionCover, runShortFictionProduction } from "../pipeline/short-fiction-runner.js";
+import { runShortFictionProduction } from "../pipeline/short-fiction-runner.js";
 import { runInteractiveFilmCreation, runScriptCreation, runStoryboardCreation } from "../pipeline/script-storyboard-runner.js";
 import { createTranslationProjectFromFile } from "../translation/index.js";
 import { runResearchReport } from "../agents/researcher.js";
@@ -128,7 +128,6 @@ const ProposeActionParams = Type.Object({
     Type.Literal("create_book"),
     Type.Literal("short_run"),
     Type.Literal("play_start"),
-    Type.Literal("generate_cover"),
     Type.Literal("fanfic_init"),
     Type.Literal("continuation_import"),
     Type.Literal("spinoff_create"),
@@ -144,7 +143,7 @@ const ProposeActionParams = Type.Object({
     description: "The production or assisted Studio workflow the user appears to want, but which needs explicit confirmation from general chat.",
   }),
   instruction: Type.String({
-    description: "The exact production instruction to run after the user confirms. It must be self-contained: include title, story direction, active target, output directory, cover visual direction, or any referenced context that would otherwise be lost when switching sessions.",
+    description: "The exact production instruction to run after the user confirms. It must be self-contained: include title, story direction, active target, output directory, or any referenced context that would otherwise be lost when switching sessions.",
   }),
   title: Type.Optional(Type.String({
     description: "Short user-facing title for the confirmation card.",
@@ -198,9 +197,6 @@ const ProposeActionParams = Type.Object({
       maximum: 1200,
       description: "Confirmed per-chapter length in the story language's native unit. zh shorts only accept 900-1200 Chinese characters; en shorts only accept 600-800 English words. Values outside the selected language's range are rejected before the task starts. Do not put total story length here.",
     })),
-    cover: Type.Optional(Type.Boolean({
-      description: "Whether to attempt cover generation.",
-    })),
   }, { description: "Structured execution args for action=short_run." })),
   playStart: Type.Optional(Type.Object({
     title: Type.Optional(Type.String({ description: "Confirmed interactive world title." })),
@@ -222,13 +218,6 @@ const ProposeActionParams = Type.Object({
       description: "Optional action springboards shown as separate UI chips. Do not include these in initialScene.",
     })),
   }, { description: "Structured execution args for action=play_start." })),
-  generateCover: Type.Optional(Type.Object({
-    title: Type.Optional(Type.String({ description: "Confirmed cover title." })),
-    intro: Type.Optional(Type.String({ description: "Confirmed synopsis/hook for the cover." })),
-    sellingPoints: Type.Optional(Type.String({ description: "Confirmed selling points for the cover." })),
-    coverPrompt: Type.Optional(Type.String({ description: "Confirmed visual direction." })),
-    outputDir: Type.Optional(Type.String({ description: "Confirmed output directory." })),
-  }, { description: "Structured execution args for action=generate_cover." })),
   scriptCreate: Type.Optional(Type.Object({
     title: Type.Optional(Type.String({ description: "Confirmed script project title." })),
     sourceKind: Type.Optional(Type.String({ description: "Source type, e.g. novel excerpt, original idea, outline, existing script." })),
@@ -318,8 +307,6 @@ function proposedActionFallbackTitle(action: ProposeActionParamsType["action"], 
       return isZh ? "生成 InkOS Short" : "Generate InkOS Short";
     case "play_start":
       return isZh ? "启动 InkOS Play" : "Start InkOS Play";
-    case "generate_cover":
-      return isZh ? "生成封面" : "Generate cover";
     case "fanfic_init":
       return isZh ? "打开同人创作" : "Open fanfiction workflow";
     case "continuation_import":
@@ -418,10 +405,6 @@ function proposedActionPayload(
     const playStart = compactPlayStartPayload(params.playStart);
     if (playStart) payload.playStart = playStart;
   }
-  if (params.action === "generate_cover") {
-    const generateCover = compactObject(params.generateCover);
-    if (generateCover) payload.generateCover = generateCover;
-  }
   if (params.action === "script_create") {
     const scriptCreate = compactObject(params.scriptCreate);
     if (scriptCreate) payload.scriptCreate = scriptCreate;
@@ -467,10 +450,6 @@ function assertExecutableProposedAction(params: ProposeActionParamsType, payload
     requireProposedText(payload?.playStart?.initialScene, "playStart.initialScene");
     return;
   }
-  if (params.action === "generate_cover") {
-    requireProposedText(payload?.generateCover?.title, "generateCover.title");
-    return;
-  }
   if (params.action === "script_create") {
     requireProposedText(payload?.scriptCreate?.title, "scriptCreate.title");
     return;
@@ -498,7 +477,7 @@ export function createProposeActionTool(
     name: "propose_action",
     description:
       "Ask the user to confirm a production action from general chat. " +
-      "Use this before creating books, generating shorts/covers, or starting play worlds when the user has not clicked a confirmation.",
+      "Use this before creating books, generating shorts, or starting play worlds when the user has not clicked a confirmation.",
     label: "Confirm Action",
     parameters: ProposeActionParams,
     async execute(_toolCallId: string, params: ProposeActionParamsType): Promise<AgentToolResult<unknown>> {
@@ -1344,24 +1323,6 @@ const ShortFictionRunParams = Type.Object({
   charsPerChapter: Type.Optional(Type.Number({
     description: "Per-chapter length in the story language's native unit: 900-1200 Chinese characters (default 1000) for zh, or 600-800 English words (default 650) for en. Values outside the story language's range are rejected before the pipeline starts. Do not use total story length here.",
   })),
-  cover: Type.Optional(Type.Boolean({
-    description: "Whether to attempt cover image generation after synopsis and cover prompt. Default true; use false if the user only wants text assets.",
-  })),
-  coverBaseUrl: Type.Optional(Type.String({
-    description: "Optional OpenAI-compatible Responses API base URL for cover generation.",
-  })),
-  coverEndpoint: Type.Optional(Type.String({
-    description: "Optional exact Responses endpoint for cover generation. Overrides coverBaseUrl.",
-  })),
-  coverModel: Type.Optional(Type.String({
-    description: "Optional image-capable Responses model. Default gpt-image-2.",
-  })),
-  coverSize: Type.Optional(Type.String({
-    description: "Optional image size, default 1024x1360.",
-  })),
-  coverApiKeyEnv: Type.Optional(Type.String({
-    description: "Optional env var containing the cover API key. Default INKOS_COVER_API_KEY.",
-  })),
 });
 
 type ShortFictionRunParamsType = Static<typeof ShortFictionRunParams>;
@@ -1389,7 +1350,7 @@ export function createShortFictionRunTool(
     name: "short_fiction_run",
     description:
       "Create a standalone short fiction project from a direction. " +
-      "Runs outline -> outline review/revision -> full draft -> draft review/revision -> synopsis/selling points/cover prompt -> optional cover image. " +
+      "Runs outline -> outline review/revision -> full draft -> draft review/revision -> synopsis/selling points. " +
       "Uses the user's direction and optional reference notes as input.",
     label: "Short Fiction",
     parameters: ShortFictionRunParams,
@@ -1423,12 +1384,6 @@ export function createShortFictionRunTool(
           chapterCount: shortPayload?.chapters ?? params.chapters,
           charsPerChapter,
           language,
-          cover: shortPayload?.cover ?? params.cover,
-          coverBaseUrl: params.coverBaseUrl,
-          coverEndpoint: params.coverEndpoint,
-          coverModel: params.coverModel,
-          coverSize: params.coverSize,
-          coverApiKeyEnv: params.coverApiKeyEnv,
           signal: _signal,
           onProgress: progress,
         }),
@@ -1439,33 +1394,11 @@ export function createShortFictionRunTool(
           `Short fiction "${result.storyId}" completed.`,
           `Final: ${result.finalMarkdownPath}`,
           `Sales package: ${result.salesPackagePath}`,
-          `Cover prompt: ${result.coverPromptPath}`,
-          result.coverImagePath
-            ? `Cover image: ${result.coverImagePath}`
-            : [
-                "Cover image: not generated.",
-                `Cover image reason: ${summarizeCoverGenerationError(result.coverError)}`,
-                "The short fiction draft, synopsis, selling points, and cover prompt were still written successfully.",
-              ].join("\n"),
         ].join("\n"),
         { kind: "short_fiction_created", ...result },
       );
     },
   };
-}
-
-function summarizeCoverGenerationError(error: string | undefined): string {
-  const text = (error ?? "not generated").trim();
-  if (text.includes("HTTP 503")) {
-    return "cover provider returned HTTP 503; retry later or switch the Studio cover provider/model.";
-  }
-  if (text.includes("HTTP 502")) {
-    return "cover provider returned HTTP 502; retry later or switch the Studio cover provider/model.";
-  }
-  if (/API key is required|api key/i.test(text)) {
-    return "cover API key is missing; configure it in Studio service settings.";
-  }
-  return text.slice(0, 300);
 }
 
 // ---------------------------------------------------------------------------
@@ -1813,90 +1746,6 @@ export function createInteractiveFilmCreationTool(
           `Image assets: ${result.assetsManifestPath}`,
         ].join("\n"),
         { kind: "interactive_film_created", ...result },
-      );
-    },
-  };
-}
-
-// ---------------------------------------------------------------------------
-// 4. Standalone Cover Tool
-// ---------------------------------------------------------------------------
-
-const GenerateCoverParams = Type.Object({
-  title: Type.String({
-    description: "Required book or short-fiction title. Use the real story title when regenerating an existing cover.",
-  }),
-  intro: Type.Optional(Type.String({
-    description: "Optional synopsis or one-paragraph story hook to guide the cover.",
-  })),
-  sellingPoints: Type.Optional(Type.String({
-    description: "Optional selling points separated by semicolons or new lines, e.g. 婚姻背叛；证据反杀；女主冷笑.",
-  })),
-  coverPrompt: Type.Optional(Type.String({
-    description: "Optional concrete or revised visual direction. Use this when the user changes the cover prompt through chat. Keep it short and commercial; do not paste the whole story.",
-  })),
-  outputDir: Type.Optional(Type.String({
-    description: "Optional project-relative directory for cover-prompt.md and cover.png. For an existing short or cover prompt revision, use its existing final/cover directory to overwrite that cover.",
-  })),
-  coverBaseUrl: Type.Optional(Type.String({
-    description: "Optional image API base URL. Usually omit and use Studio cover config.",
-  })),
-  coverEndpoint: Type.Optional(Type.String({
-    description: "Optional exact image endpoint. Overrides coverBaseUrl.",
-  })),
-  coverModel: Type.Optional(Type.String({
-    description: "Optional image model. Usually omit and use Studio cover config.",
-  })),
-  coverSize: Type.Optional(Type.String({
-    description: "Optional image size, default 1024x1360.",
-  })),
-  coverApiKeyEnv: Type.Optional(Type.String({
-    description: "Optional env var containing the cover API key. Usually omit and use Studio cover config.",
-  })),
-});
-
-type GenerateCoverParamsType = Static<typeof GenerateCoverParams>;
-
-export function createGenerateCoverTool(
-  projectRoot: string,
-  options: { readonly actionPayload?: ActionPayload } = {},
-): AgentTool<typeof GenerateCoverParams> {
-  return {
-    name: "generate_cover",
-    description:
-      "Generate only a cover image and cover prompt from a title/synopsis/visual direction. " +
-      "Use this when the user asks to create/regenerate a cover or revise the cover prompt through chat, without rerunning story generation.",
-    label: "Generate Cover",
-    parameters: GenerateCoverParams,
-    async execute(
-      _toolCallId: string,
-      params: GenerateCoverParamsType,
-      _signal?: AbortSignal,
-      onUpdate?: AgentToolUpdateCallback,
-    ): Promise<AgentToolResult<unknown>> {
-      onUpdate?.(textResult("Generating cover image..."));
-      const coverPayload = options.actionPayload?.generateCover;
-      const result = await generateShortFictionCover({
-        projectRoot,
-        title: coverPayload?.title ?? params.title,
-        intro: coverPayload?.intro ?? params.intro,
-        sellingPoints: coverPayload?.sellingPoints ?? params.sellingPoints,
-        coverPrompt: coverPayload?.coverPrompt ?? params.coverPrompt,
-        outputDir: coverPayload?.outputDir ?? params.outputDir,
-        coverBaseUrl: params.coverBaseUrl,
-        coverEndpoint: params.coverEndpoint,
-        coverModel: params.coverModel,
-        coverSize: params.coverSize,
-        coverApiKeyEnv: params.coverApiKeyEnv,
-        signal: _signal,
-      });
-      return textResult(
-        [
-          `Cover generated for "${result.title}".`,
-          `Cover prompt: ${result.coverPromptPath}`,
-          `Cover image: ${result.coverImagePath}`,
-        ].join("\n"),
-        { kind: "cover_generated", ...result },
       );
     },
   };

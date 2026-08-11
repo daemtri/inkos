@@ -6,7 +6,6 @@ import { StateManager } from "../state/manager.js";
 import { ArchitectIncompleteFoundationError } from "../agents/architect.js";
 import {
   createReadTool,
-  createGenerateCoverTool,
   createSubAgentTool,
   createShortFictionRunTool,
   createPatchChapterTextTool,
@@ -225,10 +224,10 @@ describe("agent deterministic writing tools", () => {
       },
     });
     const en = await enTool.execute("proposal-en", {
-      action: "generate_cover",
-      instruction: "Generate a cover for Night Ledger.",
-      generateCover: {
-        title: "Night Ledger",
+      action: "short_run",
+      instruction: "Generate a short story for Night Ledger.",
+      shortRun: {
+        direction: "Night Ledger short",
       },
     });
 
@@ -239,7 +238,7 @@ describe("agent deterministic writing tools", () => {
       expect(zh.content[0].text).toContain("确认后会切换到对应入口");
     }
     if (en.content[0]?.type === "text") {
-      expect(en.content[0].text).toContain("Generate cover");
+      expect(en.content[0].text).toContain("Generate InkOS Short");
       expect(en.content[0].text).toContain("After confirmation");
     }
   });
@@ -915,25 +914,10 @@ describe("agent deterministic writing tools", () => {
 
     expect(tool.name).toBe("short_fiction_run");
     expect(schemaText).toContain("direction");
-    expect(schemaText).toContain("coverModel");
     expect(schemaText).toContain("charsPerChapter");
     expect(schemaText).not.toContain("\"chars\"");
     expect(toolText).not.toContain("benchmark");
     expect(toolText).not.toContain("deconstruction");
-  });
-
-  it("exposes standalone cover generation as its own tool", () => {
-    const tool = createGenerateCoverTool(root);
-    const schemaText = JSON.stringify(tool.parameters);
-    const toolText = JSON.stringify({ description: tool.description, parameters: tool.parameters });
-
-    expect(tool.name).toBe("generate_cover");
-    expect(schemaText).toContain("title");
-    expect(schemaText).toContain("outputDir");
-    expect(schemaText).toContain("coverPrompt");
-    expect(toolText).toContain("revise the cover prompt");
-    expect(schemaText).toContain("coverModel");
-    expect(toolText).not.toContain("short_fiction_run");
   });
 
   it("exposes script, storyboard, and interactive-film creation as standalone production tools", () => {

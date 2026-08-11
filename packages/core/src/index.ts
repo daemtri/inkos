@@ -210,7 +210,6 @@ export {
   ActionSourceSchema,
   ActionPayloadSchema,
   CreateBookActionPayloadSchema,
-  GenerateCoverActionPayloadSchema,
   InteractiveFilmCreateActionPayloadSchema,
   PlayStartActionPayloadSchema,
   RequestedIntentSchema,
@@ -380,12 +379,7 @@ export {
   type ShortFictionLanguage,
 } from "./agents/short-fiction.js";
 export {
-  generateShortFictionCover,
   runShortFictionProduction,
-  extractResponsesImageBase64,
-  resolveCoverApiKey,
-  type ShortFictionCoverOptions,
-  type ShortFictionCoverResult,
   type ShortFictionRunOptions,
   type ShortFictionRunResult,
   type ShortFictionRunRuntimes,

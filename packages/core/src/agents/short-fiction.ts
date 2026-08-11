@@ -57,7 +57,6 @@ export interface ShortFictionSalesPackage {
   readonly title: string;
   readonly intro: string;
   readonly sellingPoints: ReadonlyArray<string>;
-  readonly coverPrompt: string;
   readonly rawContent: string;
 }
 
@@ -376,9 +375,6 @@ export function parseShortFictionSalesPackage(rawContent: string, fallbackTitle 
   const sellingRaw = extractTaggedBlock(rawContent, "SHORT_FICTION_SELLING_POINTS")
     || extractTaggedBlock(rawContent, "SELLING_POINTS")
     || "";
-  const coverPrompt = extractTaggedBlock(rawContent, "SHORT_FICTION_COVER_PROMPT")
-    || extractTaggedBlock(rawContent, "COVER_PROMPT")
-    || "";
   return {
     title,
     intro: intro.trim(),
@@ -386,7 +382,6 @@ export function parseShortFictionSalesPackage(rawContent: string, fallbackTitle 
       .split(/\n+/)
       .map((line) => line.replace(/^\s*[-*]\s*/, "").trim())
       .filter(Boolean),
-    coverPrompt: coverPrompt.trim(),
     rawContent: rawContent.trim(),
   };
 }

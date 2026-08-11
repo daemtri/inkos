@@ -21,8 +21,6 @@ import {
 } from "@actalk/inkos-core";
 import { buildPipelineConfig, findProjectRoot, loadConfig, log, logError } from "../utils.js";
 
-export { extractResponsesImageBase64, resolveCoverApiKey } from "@actalk/inkos-core";
-
 export const shortCommand = new Command("short")
   .description("Short fiction production workflow");
 
@@ -43,13 +41,7 @@ shortCommand
   .option("--writer-model <model>", "Model for first full draft")
   .option("--draft-review-model <model>", "Model for draft review")
   .option("--revise-model <model>", "Model for second full draft")
-  .option("--package-model <model>", "Model for synopsis and cover prompt packaging")
-  .option("--cover-base-url <url>", "OpenAI-compatible Responses API base URL for cover generation, e.g. https://api.openai.com/v1")
-  .option("--cover-endpoint <url>", "Exact Responses endpoint for cover generation; overrides --cover-base-url")
-  .option("--cover-model <model>", "Image-capable Responses model for cover generation", "gpt-5.5")
-  .option("--cover-size <size>", "Cover image size", "1024x1360")
-  .option("--cover-api-key-env <name>", "Env var containing cover API key", "INKOS_COVER_API_KEY")
-  .option("--no-cover", "Skip cover image generation")
+  .option("--package-model <model>", "Model for synopsis and selling points packaging")
   .option("--json", "Output JSON")
   .action(async (opts: ShortRunOptions) => {
     try {
@@ -122,12 +114,6 @@ shortCommand
         chapterCount,
         charsPerChapter,
         language,
-        cover: opts.cover,
-        coverBaseUrl: opts.coverBaseUrl,
-        coverEndpoint: opts.coverEndpoint,
-        coverModel: opts.coverModel,
-        coverSize: opts.coverSize,
-        coverApiKeyEnv: opts.coverApiKeyEnv,
         onProgress: opts.json ? undefined : (message) => log(message),
       });
 
@@ -142,7 +128,6 @@ shortCommand
         log(`Short run complete: ${result.storyId}`);
         log(`Final: ${payload.finalMarkdownPath}`);
         log(`Sales package: ${payload.salesPackagePath}`);
-        log(formatCoverStatus(payload.coverImagePath, payload.coverError));
       }
     } catch (e) {
       logCommandError("Short run failed", e, opts.json);
@@ -165,12 +150,6 @@ interface ShortRunOptions {
   readonly draftReviewModel?: string;
   readonly reviseModel?: string;
   readonly packageModel?: string;
-  readonly coverBaseUrl?: string;
-  readonly coverEndpoint?: string;
-  readonly coverModel?: string;
-  readonly coverSize?: string;
-  readonly coverApiKeyEnv?: string;
-  readonly cover?: boolean;
   readonly json?: boolean;
 }
 
@@ -289,12 +268,6 @@ function parseEnvInteger(value: string | undefined, fallback: number): number {
   if (!value) return fallback;
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function formatCoverStatus(coverImagePath?: string, coverError?: string): string {
-  if (coverImagePath) return `Cover: ${coverImagePath}`;
-  if (coverError) return `Cover: skipped (${coverError})`;
-  return "Cover: skipped";
 }
 
 function logCommandError(prefix: string, error: unknown, json?: boolean): void {

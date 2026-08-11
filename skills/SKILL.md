@@ -1,13 +1,13 @@
 ---
 name: inkos
-description: Story Creation and Translation AI Agent with Studio Chat, CLI, and TUI - use for long-form novels, short fiction, scripts, storyboards, interactive-film projects, open-world / branching play, fan fiction, spinoffs, style imitation, continuations, covers, and multilingual EPUB/PDF/TXT/Markdown translation. Includes Agent Skills, traceable research, governed context, persistent story state, multi-model routing, image services, and InkOS Studio.
+description: Story Creation and Translation AI Agent with Studio Chat, CLI, and TUI - use for long-form novels, short fiction, scripts, storyboards, interactive-film projects, open-world / branching play, fan fiction, spinoffs, style imitation, continuations, and multilingual EPUB/PDF/TXT/Markdown translation. Includes Agent Skills, traceable research, governed context, persistent story state, multi-model routing, image services, and InkOS Studio.
 version: 2.8.3
 metadata: { "openclaw": { "emoji": "📖", "requires": { "bins": ["inkos", "node"], "env": ["OPENAI_API_KEY"] }, "primaryEnv": "OPENAI_API_KEY", "homepage": "https://github.com/Narcooo/inkos", "install": [{ "id": "npm", "kind": "node", "package": "@actalk/inkos", "label": "Install InkOS (npm)" }] } }
 ---
 
 # InkOS - Story Creation AI Agent
 
-InkOS is a story creation and multilingual translation AI agent for long-form novels, short fiction, scripts, storyboards, interactive-film projects, fan works, continuations, covers, open-world / branching interactive play, and long-document localization. Prefer the Studio Chat / action-surface workflow for natural-language requests: the model proposes or invokes typed actions, InkOS executes them, and completion is derived from real tool results and files, not from prose claims.
+InkOS is a story creation and multilingual translation AI agent for long-form novels, short fiction, scripts, storyboards, interactive-film projects, fan works, continuations, open-world / branching interactive play, and long-document localization. Prefer the Studio Chat / action-surface workflow for natural-language requests: the model proposes or invokes typed actions, InkOS executes them, and completion is derived from real tool results and files, not from prose claims.
 
 Long-form writing still uses the chapter pipeline internally:
 - **Input governance**: Architect / Planner / Composer preserve author intent, current focus, outline sections, and relevant truth files instead of injecting everything blindly.
@@ -22,9 +22,8 @@ Persisted story memory is isolated to its project and book, excludes credentials
 Treat InkOS as a confirmable action system, not a bag of prompt shortcuts. v1.7.2 replaces the former InkOS-private Skill protocol with standard AgentSkills / OpenClaw `SKILL.md` packages. Skills provide professional guidance and static references only: they can be selected explicitly or activated by the Chat Agent through `use_skill`, but they never grant execution permissions.
 
 - Natural-language requests should go through Studio Chat / TUI / `inkos interact` whenever possible.
-- Do not infer success from assistant prose. A book, short, cover, or play step is complete only when the corresponding tool result and files exist.
+- Do not infer success from assistant prose. A book, short, or play step is complete only when the corresponding tool result and files exist.
 - Use `short_fiction_run` only for a standalone short-fiction package.
-- Use `generate_cover` only for cover generation/regeneration.
 - Use `play_start` / `play_step` for Open World or Branching Interactive sessions.
 - Use script / storyboard / interactive-film tools only for production artifacts that should be saved and exported, not for casual discussion.
 - Use the translation project workflow for EPUB, text-based PDF, TXT, or Markdown localization. Keep source and target languages, glossary, review report, and export format explicit; do not replace it with an ad hoc one-turn translation when the user wants a complete deliverable.
@@ -50,8 +49,7 @@ v1.7.0 added complete multilingual translation/localization, English-native shor
 - **Import & continue**: Import existing chapters from a text file, reverse-engineer truth files, and continue writing
 - **Style imitation**: Analyze and adopt writing styles from reference texts
 - **Spinoff writing**: Write prequels/sequels/spinoffs while maintaining parent canon
-- **Standalone short fiction**: Generate a complete short-fiction package with outline, draft, review artifacts, synopsis, selling points, and optional cover image
-- **Cover generation**: Generate or regenerate only a cover prompt and cover image from a title, synopsis, or visual direction without rerunning story writing
+- **Standalone short fiction**: Generate a complete short-fiction package with outline, draft, review artifacts, synopsis, and selling points
 - **Interactive worlds**: Start Open World or Branching Interactive sessions with world contracts, character agents, inventory/evidence/relationship state, guided choices, free actions, and optional image generation
 - **Interactive-film projects**: Create playable branch graphs, variables/flags, relationship state, endings, node images, and exportable interactive project packages
 - **Scripts and storyboards**: Convert ideas, outlines, or prose into script/storyboard deliverables while preserving user format choices
@@ -171,7 +169,7 @@ The current JSON payload contains:
 - assistant response text
 - interaction session id / session kind / active book id when bound
 
-Real completion still comes from tool results and files. Do not treat assistant prose alone as proof that a book, chapter, short, cover, or play step was created.
+Real completion still comes from tool results and files. Do not treat assistant prose alone as proof that a book, chapter, short, or play step was created.
 
 Use this as the primary OpenClaw entry because it shares the same control layer as the project TUI.
 
@@ -374,9 +372,8 @@ Use Studio Chat or `inkos interact` for small, explicit edits to generated text 
 
 ```bash
 inkos interact --book my-book --json --message "把第 3 章里那句过长的解释删短一点，但不要改剧情事实"
-inkos interact --json --message "把 covers/demo/cover-prompt.md 里的人物拉近一点，标题字更大"
 ```
-- Use for clear text edits, cover prompt edits, and control-document edits.
+- Use for clear text edits and control-document edits.
 - Do not infer success from the assistant's prose; check the tool result or changed file.
 - For broad story direction changes, prefer updating `author_intent.md` / `current_focus.md`, then run `plan` / `compose` before writing.
 
@@ -413,34 +410,10 @@ inkos short run \
 Outputs are written under `shorts/<story-name>/final/`:
 - `full.md` — complete short-fiction manuscript
 - `sales-package.md` — synopsis and selling points
-- `cover-prompt.md` — cover prompt
-- `cover.png` — cover image when a cover provider is configured
 
 For OpenClaw/Studio/agent orchestration, call the `short_fiction_run` tool when the user asks for a new complete short-fiction package. Do not use it for the next chapter of an existing long-form book.
 
-### Workflow 16: Standalone Cover Tool
-
-Use this when the user only wants a cover for an existing title, synopsis, or visual direction. Do not rerun the short-fiction pipeline.
-
-In Studio or agent mode, ask naturally:
-
-```text
-Generate a short-fiction cover for "The Divorce Papers He Regretted", modern city, high-drama reversal.
-```
-
-For tool-using agents, call `generate_cover` with:
-- `title` — required
-- `intro` or `sellingPoints` — optional story context
-- `coverPrompt` — optional visual direction
-- `outputDir` — optional; defaults to `covers/<title>/`
-
-The standalone cover tool writes:
-- `covers/<title>/cover-prompt.md`
-- `covers/<title>/cover.png`
-
-If cover image generation fails, report the provider/configuration error plainly. Do not rewrite the story, do not rerun `short_fiction_run`, and do not suggest unrelated external tools unless the user asks.
-
-### Workflow 17: Open World / Branching Interactive Play
+### Workflow 16: Open World / Branching Interactive Play
 
 Use this when the user wants to play inside an interactive world instead of generating a finished manuscript.
 
@@ -455,9 +428,9 @@ For tool-using agents:
 - Call `play_step` when the user performs an action inside an existing world.
 - Keep Open World free-form: do not force clickable choices unless the current session is Branching Interactive.
 - If the user changes world rules, persona, visual contract, or character behavior, treat it as a world-state edit or a new instruction for the next step, not as long-form chapter writing.
-- If image generation is configured, let Play generate scene / character / item / evidence images through the Play image path. Do not call the short-fiction cover tool for Play scene images.
+- If image generation is configured, let Play generate scene / character / item / evidence images through the Play image path.
 
-### Workflow 18: Agent Skills
+### Workflow 17: Agent Skills
 
 Use this when the user wants reusable professional rules, a domain-specific writing mode, or a forced capability for the current Chat turn.
 
@@ -482,7 +455,7 @@ Guidelines for agent orchestration:
 - Skill folders may contain static references. Read them only when needed, and never auto-execute bundled scripts.
 - Do not treat skills as permissions. File edits, book creation, chapter writing, image generation, and exports still require the normal InkOS tools and confirmation gates.
 
-### Workflow 19: Traceable Web Research
+### Workflow 18: Traceable Web Research
 
 Use this when the user asks for real-world references, external facts, era/profession details, market references, or worldbuilding research.
 
@@ -501,7 +474,7 @@ The report includes sources, claims, unknowns, conflicts, query logs, and confid
 
 Search credentials are user/project supplied. Studio can configure a Tavily-compatible search API, or the server can use `TAVILY_API_KEY` from the environment.
 
-### Workflow 20: Script, Storyboard, and Interactive-Film Creation
+### Workflow 19: Script, Storyboard, and Interactive-Film Creation
 
 Use this when the user wants a production artifact rather than a casual answer:
 - Script: dramatic scenes, dialogue, acts, episode structure, or format-specific script drafts.
@@ -510,7 +483,7 @@ Use this when the user wants a production artifact rather than a casual answer:
 
 In Studio Chat, these actions should be proposed with a confirmation card first. After confirmation, InkOS writes the artifact and reports the saved files. Do not hand-write a fake "created" result in prose.
 
-### Workflow 21: Multilingual Translation / Localization
+### Workflow 20: Multilingual Translation / Localization
 
 Use a translation project when the user wants a complete, reviewable deliverable rather than a one-off translated paragraph. Inputs can be EPUB, text-based PDF, TXT, or Markdown; source and target languages can be written as normal language names in Studio.
 
@@ -530,7 +503,7 @@ inkos translate export <project-id> --format epub
 `inkos studio` launches a local web UI (default port 4567) that provides a visual interface for all InkOS operations:
 
 - **Book management** — create, delete, export (TXT/MD/EPUB), configure per-book settings
-- **Short fiction & cover tools** — generate independent short-fiction packages, synopsis/selling points, cover prompts, and standalone covers
+- **Short fiction tools** — generate independent short-fiction packages and synopsis/selling points
 - **Open World / Branching Interactive** — start and continue interactive worlds with world contracts, free actions, clickable choices, HUD state, and image generation
 - **Interactive-film workbench** — create and inspect branch nodes, variables/flags, endings, node images, and export packages
 - **Script / storyboard tools** — generate production-oriented script and storyboard files from ideas, prose, or reference notes
@@ -546,14 +519,14 @@ inkos translate export <project-id> --format epub
 - **Genre management** — create/customize genre profiles with fatigue words, pacing rules, audit dimensions
 - **Daemon control** — start/stop background writing with event log
 - **Truth file editor** — view and edit canonical knowledge base per book
-- **Config editor** — LLM provider, model routing, cover/image services, notifications
+- **Config editor** — LLM provider, model routing, image services, notifications
 
 ```bash
 inkos studio              # Start on default port 4567
 inkos studio -p 8080      # Start on custom port
 ```
 
-The **Studio Chat** surface shares the same action kernel as TUI and CLI. It can answer questions, propose/confirm creation and translation actions, run Short, generate covers, start Play, import existing novels, edit persistent text artifacts, and invoke long-form writing operations.
+The **Studio Chat** surface shares the same action kernel as TUI and CLI. It can answer questions, propose/confirm creation and translation actions, run Short, start Play, import existing novels, edit persistent text artifacts, and invoke long-form writing operations.
 
 ## Advanced: Natural Language Agent Mode
 
@@ -591,16 +564,9 @@ These are the preferred tools when InkOS is driven by OpenClaw, Studio chat, or 
 
 - `short_fiction_run`
   - Creates an independent short-fiction package from a direction
-  - Runs outline → outline review/revision → full draft → draft review/revision → synopsis/selling points/cover prompt → optional cover image
+  - Runs outline → outline review/revision → full draft → draft review/revision → synopsis/selling points
   - Writes to `shorts/<story-name>/`
   - Use only when the user asks for a separate complete short story / short-fiction deliverable
-
-- `generate_cover`
-  - Generates only a cover prompt and cover image
-  - Writes to `covers/<title>/` by default
-  - Use when the user asks to create or regenerate a cover for an existing title, synopsis, or completed short
-  - Also use when the user changes the cover prompt through chat; pass the revised visual direction as `coverPrompt` and reuse the existing `outputDir` when available
-  - Do not rerun story generation unless the user explicitly asks for a new story
 
 - `play_start`
   - Starts a new Open World or Branching Interactive run
@@ -712,7 +678,7 @@ inkos genre copy xuanhuan
 | `inkos export` | Export finished book | Formats: txt, md, epub |
 | `inkos analytics` / `inkos stats` | View book statistics | Word count, audit rates, token usage |
 | `inkos radar scan` | Platform trend analysis | Informs new book ideas |
-| `inkos short run` | Generate standalone short fiction | Outputs manuscript, sales package, cover prompt, optional cover |
+| `inkos short run` | Generate standalone short fiction | Outputs manuscript and sales package |
 | `inkos config set-global` | Configure LLM provider | OpenAI/Anthropic/custom (any OpenAI-compatible) |
 | `inkos config set-model <agent> <model>` | Set model override for a specific agent | `--provider`, `--base-url`, `--api-key-env` for multi-provider routing |
 | `inkos config show-models` | Show current model routing | View per-agent model assignments |

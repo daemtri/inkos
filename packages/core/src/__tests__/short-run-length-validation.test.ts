@@ -12,8 +12,6 @@ const { runShortFictionProductionMock } = vi.hoisted(() => ({
     finalMarkdownPath: "shorts/length-check/final/story.md",
     finalJsonPath: "shorts/length-check/final/story.json",
     salesPackagePath: "shorts/length-check/final/sales.md",
-    coverPromptPath: "shorts/length-check/final/cover-prompt.md",
-    coverImagePath: "shorts/length-check/final/cover.png",
   })),
 }));
 
@@ -87,7 +85,6 @@ describe("short_run charsPerChapter validation (propose_action)", () => {
         language: "en",
         chapters: 12,
         charsPerChapter: 1100,
-        cover: false,
       },
     } as never)).rejects.toThrow(/600-800/);
   });
@@ -114,7 +111,6 @@ describe("short_run charsPerChapter validation (tool layer, before pipeline star
           direction: "an English office suspense story",
           language: "en",
           charsPerChapter: 1100,
-          cover: false,
         },
       } as never,
     });
@@ -143,7 +139,6 @@ describe("short_run charsPerChapter validation (tool layer, before pipeline star
         shortRun: {
           direction: "an English office suspense story",
           language: "en",
-          cover: false,
         },
       } as never,
     });

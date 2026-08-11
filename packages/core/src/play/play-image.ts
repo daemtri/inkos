@@ -13,7 +13,7 @@ import { join } from "node:path";
 import {
   generateImageFromPrompt,
   resolveCoverGenerationRequest,
-} from "../pipeline/short-fiction-runner.js";
+} from "../llm/image-generation.js";
 
 /** Per-type task framing only; visual style must come from the world / visual contract. */
 const SHOT_BY_TYPE: Record<string, string> = {
